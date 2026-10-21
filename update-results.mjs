@@ -186,14 +186,15 @@ export async function fetchOfficialResults() {
 }
 
 export function parseStats247History(html, fromDate = null) {
-  const pageText = visibleTextFromHtml(html);
-  const headingIndex = pageText.search(/\bSuper 5 Lottery Results\b/i);
-  if (headingIndex < 0) {
+  const resultHeading = [...html.matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]\s*>/gi)]
+    .find((heading) => /\bSuper 5 Lottery Results\b/i.test(visibleTextFromHtml(heading[1])));
+  if (!resultHeading) {
     fail("Stats247 did not show its Super 5 results table. No archive changes were made.");
   }
-  const resultsStart = html.search(/Super 5 Lottery Results/i);
-  const laterHeadings = [...html.slice(resultsStart).matchAll(/Hot\s*&(?:amp;)?\s*Cold Numbers/gi)];
-  const resultsEnd = laterHeadings.length ? resultsStart + laterHeadings[0].index : -1;
+  const resultsStart = resultHeading.index + resultHeading[0].length;
+  const laterHeadings = [...html.slice(resultsStart).matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]\s*>/gi)];
+  const endingHeading = laterHeadings.find((heading) => /Hot\s*&\s*Cold Numbers/i.test(visibleTextFromHtml(heading[1])));
+  const resultsEnd = endingHeading ? resultsStart + endingHeading.index : -1;
   if (resultsEnd < 0) {
     fail("Stats247's results section could not be bounded safely. No archive changes were made.");
   }
@@ -483,3 +484,4 @@ async function main() {
 const isDirectRun = typeof process !== "undefined" && process.argv[1] &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) await main();
+

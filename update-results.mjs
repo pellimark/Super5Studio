@@ -10,6 +10,8 @@ const logPath = path.join(projectRoot, "data", "results-update.log");
 const sourceUrl = "https://lottery.mt/super5/results/history/";
 const fallbackSourceUrl = "https://stats247.com/lotto/malta-super-5";
 const timeoutMs = 20_000;
+const fallbackRetryDelayMs = 1_000;
+const transientHttpStatuses = new Set([408, 425, 429, 500, 502, 503, 504, 522, 523, 524]);
 const formatBoundary = 259;
 const monthNumbers = new Map([
   ["jan", 1], ["january", 1], ["feb", 2], ["february", 2],
@@ -245,59 +247,77 @@ export function parseStats247History(html, fromDate = null) {
 }
 
 export async function fetchStats247Results(archive) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(fallbackSourceUrl, {
-      signal: controller.signal,
-      headers: {
-        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "accept-language": "en-GB,en;q=0.9",
-        "user-agent": "Super5Studio/0.1 (+https://github.com/pellimark/Super5Studio)"
+  let response;
+  let requestError;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      response = await fetch(fallbackSourceUrl, {
+        signal: controller.signal,
+        headers: {
+          accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "accept-language": "en-GB,en;q=0.9",
+          "user-agent": "Super5Studio/0.1 (+https://github.com/pellimark/Super5Studio)"
+        }
+      });
+      requestError = null;
+      if (response.ok) break;
+      requestError = new Error(`Stats247 returned HTTP ${response.status}.`);
+      if (!transientHttpStatuses.has(response.status)) throw requestError;
+    } catch (error) {
+      if (error === requestError) throw error;
+      if (error?.name === "AbortError") {
+        requestError = new Error(`Stats247 did not respond within ${timeoutMs / 1000} seconds.`);
+      } else if (error instanceof TypeError) {
+        requestError = error;
+      } else {
+        throw error;
       }
-    });
-    if (!response.ok) {
-      fail(`Stats247 returned HTTP ${response.status}.`);
-    }
-    if (new URL(response.url).hostname !== "stats247.com") {
-      fail("Stats247 redirected away from stats247.com.");
-    }
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.toLowerCase().includes("text/html")) {
-      fail(`Stats247 returned an unexpected content type: ${contentType || "unknown"}.`);
+    } finally {
+      clearTimeout(timeout);
     }
 
-    const latest = archive.draws.at(-1);
-    const rows = parseStats247History(await response.text(), latest.date);
-    const latestIndex = rows.findIndex((draw) => draw.date === latest.date);
-    if (latestIndex < 0) {
-      fail(`Stats247 does not show the saved latest draw date ${latest.date}; it may be stale or incomplete. No archive changes were made.`);
-    }
-    if (rows[latestIndex].numbers.join(",") !== latest.numbers.join(",")) {
-      fail(`Stats247's result for ${latest.date} differs from the saved archive. No archive changes were made.`);
-    }
-
-    const sourceDraws = [{ ...latest }];
-    let previous = latest;
-    for (const row of rows.slice(latestIndex + 1)) {
-      const expected = nextScheduledDraw(previous, new Date(`${previous.date}T12:00:00.000Z`));
-      if (row.date !== expected.date) {
-        fail(`Stats247 skips or has an unexpected draw date after ${previous.date}; expected ${expected.date}. No archive changes were made.`);
+    if (attempt === 2) {
+      if (requestError?.message.startsWith("Stats247 returned HTTP")) {
+        fail(`${requestError.message.slice(0, -1)} after 2 attempts.`);
       }
-      const draw = { draw: previous.draw + 1, date: row.date, numbers: row.numbers };
-      validateDraw(draw, "Stats247 fallback");
-      sourceDraws.push(draw);
-      previous = draw;
+      throw requestError;
     }
-    return sourceDraws;
-  } catch (error) {
-    if (error?.name === "AbortError") {
-      fail(`Stats247 did not respond within ${timeoutMs / 1000} seconds.`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
+    await new Promise((resolve) => setTimeout(resolve, fallbackRetryDelayMs));
   }
+
+  if (new URL(response.url).hostname !== "stats247.com") {
+    fail("Stats247 redirected away from stats247.com.");
+  }
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().includes("text/html")) {
+    fail(`Stats247 returned an unexpected content type: ${contentType || "unknown"}.`);
+  }
+
+  const latest = archive.draws.at(-1);
+  const rows = parseStats247History(await response.text(), latest.date);
+  const latestIndex = rows.findIndex((draw) => draw.date === latest.date);
+  if (latestIndex < 0) {
+    fail(`Stats247 does not show the saved latest draw date ${latest.date}; it may be stale or incomplete. No archive changes were made.`);
+  }
+  if (rows[latestIndex].numbers.join(",") !== latest.numbers.join(",")) {
+    fail(`Stats247's result for ${latest.date} differs from the saved archive. No archive changes were made.`);
+  }
+
+  const sourceDraws = [{ ...latest }];
+  let previous = latest;
+  for (const row of rows.slice(latestIndex + 1)) {
+    const expected = nextScheduledDraw(previous, new Date(`${previous.date}T12:00:00.000Z`));
+    if (row.date !== expected.date) {
+      fail(`Stats247 skips or has an unexpected draw date after ${previous.date}; expected ${expected.date}. No archive changes were made.`);
+    }
+    const draw = { draw: previous.draw + 1, date: row.date, numbers: row.numbers };
+    validateDraw(draw, "Stats247 fallback");
+    sourceDraws.push(draw);
+    previous = draw;
+  }
+  return sourceDraws;
 }
 
 export async function fetchResultsWithFallback(archive) {
@@ -489,4 +509,5 @@ async function main() {
 const isDirectRun = typeof process !== "undefined" && process.argv[1] &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) await main();
+
 

@@ -156,8 +156,10 @@ export async function fetchOfficialResults() {
     const response = await fetch(sourceUrl, {
       signal: controller.signal,
       headers: {
-        accept: "text/html",
-        "user-agent": "Super5 Studio local results updater"
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "accept-language": "en-GB,en;q=0.9",
+        referer: "https://lottery.mt/super5/",
+        "user-agent": "Super5Studio/0.1 (+https://github.com/pellimark/Super5Studio)"
       }
     });
     if (!response.ok) {

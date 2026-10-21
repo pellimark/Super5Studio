@@ -117,7 +117,7 @@
                 <p class="prediction-control-note">The archive records numbers sorted from smallest to largest, not the order the balls were drawn.</p>
               </div>
 
-              <div class="line-result draw-lucky-result" id="primary-line-result" aria-live="polite">
+              <div class="line-result draw-lucky-result" id="primary-line-result">
                 <div class="line-label"><span id="line-title">YOUR QUICK PICK</span><span class="line-seq" id="line-seq">LINE 01</span></div>
                 <div class="number-line" id="generated-line">
                   <span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span>
@@ -129,14 +129,18 @@
               <section class="extra-lines-section" id="extra-lines-section" aria-label="Additional generated lines" hidden>
                 <div class="extra-lines-top"><span class="tiny-label" id="extra-lines-count">01 / 10 LINES</span><button class="clear-lines-button" id="clear-extra-lines" type="button" hidden>Clear</button></div>
                 <ol class="extra-lines-list" id="extra-lines" start="2" aria-live="polite"></ol>
+                <div class="spin-preview" id="spin-preview" aria-hidden="true" hidden>
+                  <div class="extra-line-heading"><span class="extra-line-index" id="spin-preview-index">ROLLING</span><span id="spin-preview-mode">QUICK PICK FOR DRAW 394</span></div>
+                  <div class="mini-balls extra-line-balls" id="spin-preview-balls"></div>
+                </div>
               </section>
 
               <section class="prediction-results" id="prediction-results" aria-label="Candidate number outcomes" hidden>
                 <div class="prediction-summary-bar"><p class="prediction-summary" id="prediction-summary" role="status"></p><button class="copy-button" id="copy-all-outcomes" type="button">↗ COPY ALL</button></div>
                 <p class="prediction-limit-note" id="prediction-limit-note" hidden>Fewer lines are available with this Variety setting.</p>
                 <div id="prediction-alternatives">
-                  <p class="tiny-label">POSSIBLE OUTCOMES</p>
-                  <ol class="prediction-outcomes" id="prediction-outcomes" start="1"></ol>
+                  <p class="tiny-label">MORE POSSIBLE OUTCOMES</p>
+                  <ol class="prediction-outcomes" id="prediction-outcomes" start="2"></ol>
                 </div>
               </section>
 

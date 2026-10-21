@@ -218,7 +218,7 @@ export function parseStats247History(html, fromDate = null) {
     const numbers = [...text.slice(dateMatch.index + dateMatch[0].length).matchAll(/\b\d{1,2}\b/g)]
       .map((match) => Number(match[0]));
     if (numbers.length !== 5) {
-      fail(`Stats247's row for ${date} did not contain exactly five result numbers. No archive changes were made.`);
+      fail(`Stats247's row for ${date} did not contain exactly five result numbers (found ${numbers.length}: ${numbers.join(", ")}). No archive changes were made.`);
     }
     parsed.push({ date, numbers });
   }

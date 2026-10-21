@@ -1,6 +1,6 @@
 import { appendFile, readFile } from "node:fs/promises";
 import path from "node:path";
-import { refreshArchive, validateArchive } from "./update-results.mjs";
+import { formatRefreshMessage, refreshArchive, validateArchive } from "./update-results.mjs";
 import { readCheckState, writeCheckState } from "./results-check-state.mjs";
 
 export const DEFAULT_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -50,9 +50,7 @@ export function createResultsService({
         fetchResults,
         now
       });
-      const message = result.added
-        ? `Added ${result.added} draw${result.added === 1 ? "" : "s"}; archive now ends at draw ${result.archive.coverage.lastDraw} (${result.archive.coverage.lastDate}).`
-        : `Archive is already current at draw ${result.archive.coverage.lastDraw}; no file changes were made.`;
+      const message = formatRefreshMessage(result);
       state = { checkedAt: result.checkedAt, status: "success", message };
       await log(message);
     } catch (error) {

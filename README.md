@@ -1,6 +1,6 @@
 # Super5 Studio
 
-A small, local-first playground for Malta Super5 results. It has no third-party runtime dependencies. The app server returns its saved JSON archive immediately and checks the official history in the background when the last completed check is more than 30 minutes old.
+A small, local-first playground for Malta Super5 results. It has no third-party runtime dependencies. The app server returns its saved JSON archive immediately and checks the official history in the background when the last completed check is more than 30 minutes old. If the official page cannot be read, it can use Stats247 as a clearly labeled third-party fallback.
 
 ## Run the app
 
@@ -20,11 +20,11 @@ Run:
 npm run update-results
 ```
 
-The command reads the official [Super5 results history](https://lottery.mt/super5/results/history/), validates draw numbers, dates, and five unique numbers against the 5/45 or 5/49 rules, then appends new draws in order to `data/super5-draws.json`. It updates coverage and format metadata while preserving the archive’s other metadata. Re-running it when current makes no archive changes.
+The command first reads the official [Super5 results history](https://lottery.mt/super5/results/history/). If that request or its page parser fails, it tries [Stats247](https://stats247.com/lotto/malta-super-5) as a third-party fallback. Fallback rows must include the saved latest result, match its date and numbers, and continue on the regular Wednesday/Friday schedule. New draws are also checked for sequential draw numbers, valid dates, five unique numbers, and the correct 5/45 or 5/49 range before they are appended to `data/super5-draws.json`.
 
-The updater validates the existing archive and every source draw before writing. If the source is unavailable, stale, incomplete, changed, or invalid, it reports the error and leaves the archive untouched. Writes use a temporary file in the same directory followed by an atomic rename. Each completed check time and status is stored in `data/results-check.json`; run messages are appended to `data/results-update.log`.
+The updater validates the existing archive and every source draw before writing. If both sources are unavailable, or the fallback is stale, incomplete, changed, or invalid, it reports the error and leaves the archive untouched. Writes use a temporary file in the same directory followed by an atomic rename. Each completed check time and status is stored in `data/results-check.json`; run messages are appended to `data/results-update.log`.
 
-The updater reuses the visible draw-card parser for the official history page; no official machine-readable feed is documented or linked by the operator. It does not call guessed or undocumented endpoints. If the operator changes that page’s markup, the updater stops safely and reports the problem.
+The updater reuses the visible draw-card parser for the official history page; no official machine-readable feed is documented or linked by the operator. It does not call guessed or undocumented endpoints. Stats247 warns that its results may be delayed or incorrect, so any fallback check is labeled in the app and its source is recorded when it adds draws. If either source is stale, incomplete, changed, or invalid, the archive is left untouched.
 
 ## Optional Windows schedule
 
@@ -48,9 +48,9 @@ If the PC is off at a scheduled time, Windows will try the missed run when the P
 
 ## Open app behavior
 
-On load, the browser requests `/api/results` from this app’s own server and renders the current archive as soon as it arrives. If the last completed source check is at least 30 minutes old, the server starts one background refresh; overlapping page requests share that refresh. The browser never scrapes the lottery site. While a refresh is running, the page checks the same app endpoint every two seconds and updates the draw archive and predictor in place when new verified results are saved. Otherwise it checks once a minute, and it checks again when a backgrounded tab becomes visible.
+On load, the browser requests `/api/results` from this app’s own server and renders the current archive as soon as it arrives. If the last completed source check is at least 30 minutes old, the server starts one background refresh; overlapping page requests share that refresh. The browser never scrapes the lottery site. While a refresh is running, the page checks the same app endpoint every two seconds and updates the draw archive and predictor in place when new validated results are saved. Otherwise it checks once a minute, and it checks again when a backgrounded tab becomes visible.
 
-The “Latest verified draw” card shows the newest result in the saved archive. Its date is separate from “Last source check,” which shows when the server last completed a source check, including a failed check. A failed, stale, incomplete, changed, or invalid source response does not alter the archive. The schedule card uses the latest verified draw number plus one and the regular Wednesday/Friday calendar in Malta time. It is an expected schedule only; the operator can change dates or make exceptions.
+The “Latest saved draw” card shows the newest result in the saved archive. Its date is separate from “Last source check,” which shows when the server last completed a source check, including a failed check or third-party fallback. A failed, stale, incomplete, changed, or invalid source response does not alter the archive. The schedule card uses the latest saved draw number plus one and the regular Wednesday/Friday calendar in Malta time. It is an expected schedule only; the operator can change dates or make exceptions.
 
 The **Official Super5 play page** link opens the lottery’s play flow. The operator’s [help article explains choosing numbers on its site](https://support.lottery.mt/faq/how-do-i-fill-in-a-super5-ticket/); it does not document a prefill handoff, so generated numbers are not transferred by this link.
 

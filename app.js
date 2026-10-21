@@ -262,7 +262,7 @@ function renderResultsStatus(snapshot) {
   const status = $("#refresh-state");
   status.classList.toggle("is-error", lastCheck?.status === "error" && !snapshot.refreshing);
   status.textContent = snapshot.refreshing
-    ? "Checking the official results history…"
+    ? "Checking results sources…"
     : lastCheck?.status === "error"
       ? "Last check could not verify results: " + lastCheck.message
       : lastCheck?.message || "The saved archive is ready.";
@@ -379,7 +379,7 @@ function renderArchive(resetLimit = false) {
   const host = $("#archive-list");
   host.replaceChildren();
   $("#archive-count").textContent = "SHOWING " + shown.length + " OF " + draws.length + " DRAWS";
-  $("#archive-summary").textContent = archive.coverage.drawCount + " verified results saved locally.";
+  $("#archive-summary").textContent = archive.coverage.drawCount + " results saved locally.";
   shown.forEach((draw) => {
     const row = document.createElement("article");
     row.className = "archive-row";

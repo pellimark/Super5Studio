@@ -2,11 +2,13 @@ import { appendFile, open, readFile, rename, unlink } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
+import { nextScheduledDraw } from "./next-draw.js";
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const archivePath = path.join(projectRoot, "data", "super5-draws.json");
 const logPath = path.join(projectRoot, "data", "results-update.log");
 const sourceUrl = "https://lottery.mt/super5/results/history/";
+const fallbackSourceUrl = "https://stats247.com/lotto/malta-super-5";
 const timeoutMs = 20_000;
 const formatBoundary = 259;
 const monthNumbers = new Map([
@@ -183,6 +185,135 @@ export async function fetchOfficialResults() {
   }
 }
 
+export function parseStats247History(html) {
+  const pageText = visibleTextFromHtml(html);
+  const headingIndex = pageText.search(/\bSuper 5 Lottery Results\b/i);
+  if (headingIndex < 0) {
+    fail("Stats247 did not show its Super 5 results table. No archive changes were made.");
+  }
+  const resultsStart = html.search(/Super 5 Lottery Results/i);
+  const laterHeadings = [...html.slice(resultsStart).matchAll(/Hot\s*&(?:amp;)?\s*Cold Numbers/gi)];
+  const resultsEnd = laterHeadings.length ? resultsStart + laterHeadings[0].index : -1;
+  if (resultsEnd < 0) {
+    fail("Stats247's results section could not be bounded safely. No archive changes were made.");
+  }
+
+  const sectionHtml = html.slice(resultsStart, resultsEnd);
+  const rows = [...sectionHtml.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr\s*>/gi)];
+  const parsed = [];
+  for (const row of rows) {
+    const text = visibleTextFromHtml(row[1]);
+    const dateMatch = text.match(/\b(\d{2})-(\d{2})-(\d{4})\b/);
+    if (!dateMatch) continue;
+
+    const day = Number(dateMatch[1]);
+    const month = Number(dateMatch[2]);
+    const year = Number(dateMatch[3]);
+    const dateValue = new Date(Date.UTC(year, month - 1, day));
+    if (dateValue.getUTCFullYear() !== year || dateValue.getUTCMonth() !== month - 1 || dateValue.getUTCDate() !== day) {
+      fail(`Stats247 has an invalid draw date (${dateMatch[0]}). No archive changes were made.`);
+    }
+    const date = `${year.toString().padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const numbers = [...text.slice(dateMatch.index + dateMatch[0].length).matchAll(/\b\d{1,2}\b/g)]
+      .map((match) => Number(match[0]));
+    if (numbers.length !== 5) {
+      fail(`Stats247's row for ${date} did not contain exactly five result numbers. No archive changes were made.`);
+    }
+    parsed.push({ date, numbers });
+  }
+
+  if (parsed.length === 0) {
+    fail("Stats247 did not contain any recognizable result rows. No archive changes were made.");
+  }
+
+  const seen = new Map();
+  for (const result of parsed) {
+    const previous = seen.get(result.date);
+    if (previous && previous.numbers.join(",") !== result.numbers.join(",")) {
+      fail(`Stats247 gives conflicting numbers for ${result.date}. No archive changes were made.`);
+    }
+    seen.set(result.date, result);
+  }
+  return [...seen.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function fetchStats247Results(archive) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(fallbackSourceUrl, {
+      signal: controller.signal,
+      headers: {
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "accept-language": "en-GB,en;q=0.9",
+        "user-agent": "Super5Studio/0.1 (+https://github.com/pellimark/Super5Studio)"
+      }
+    });
+    if (!response.ok) {
+      fail(`Stats247 returned HTTP ${response.status}.`);
+    }
+    if (new URL(response.url).hostname !== "stats247.com") {
+      fail("Stats247 redirected away from stats247.com.");
+    }
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("text/html")) {
+      fail(`Stats247 returned an unexpected content type: ${contentType || "unknown"}.`);
+    }
+
+    const rows = parseStats247History(await response.text());
+    const latest = archive.draws.at(-1);
+    const latestIndex = rows.findIndex((draw) => draw.date === latest.date);
+    if (latestIndex < 0) {
+      fail(`Stats247 does not show the saved latest draw date ${latest.date}; it may be stale or incomplete. No archive changes were made.`);
+    }
+    if (rows[latestIndex].numbers.join(",") !== latest.numbers.join(",")) {
+      fail(`Stats247's result for ${latest.date} differs from the saved archive. No archive changes were made.`);
+    }
+
+    const sourceDraws = [{ ...latest }];
+    let previous = latest;
+    for (const row of rows.slice(latestIndex + 1)) {
+      const expected = nextScheduledDraw(previous, new Date(`${previous.date}T12:00:00.000Z`));
+      if (row.date !== expected.date) {
+        fail(`Stats247 skips or has an unexpected draw date after ${previous.date}; expected ${expected.date}. No archive changes were made.`);
+      }
+      const draw = { draw: previous.draw + 1, date: row.date, numbers: row.numbers };
+      validateDraw(draw, "Stats247 fallback");
+      sourceDraws.push(draw);
+      previous = draw;
+    }
+    return sourceDraws;
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      fail(`Stats247 did not respond within ${timeoutMs / 1000} seconds.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export async function fetchResultsWithFallback(archive) {
+  try {
+    return {
+      draws: await fetchOfficialResults(),
+      sourceName: "official",
+      sourceUrl
+    };
+  } catch (officialError) {
+    try {
+      return {
+        draws: await fetchStats247Results(archive),
+        sourceName: "stats247",
+        sourceUrl: fallbackSourceUrl,
+        fallbackReason: officialError.message || "the official source could not be read"
+      };
+    } catch (fallbackError) {
+      fail(`Official source failed (${officialError.message || "unknown error"}); Stats247 fallback also failed (${fallbackError.message || "unknown error"}).`);
+    }
+  }
+}
+
 function maltaDate(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Malta",
@@ -194,18 +325,18 @@ function maltaDate(date = new Date()) {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-export function mergeResults(archive, sourceDraws, retrievedAt = new Date()) {
+export function mergeResults(archive, sourceDraws, retrievedAt = new Date(), sourceLabel = "Official history page") {
   const localByNumber = new Map(archive.draws.map((draw) => [draw.draw, draw]));
   for (const sourceDraw of sourceDraws) {
     const localDraw = localByNumber.get(sourceDraw.draw);
     if (localDraw && (localDraw.date !== sourceDraw.date || localDraw.numbers.join(",") !== sourceDraw.numbers.join(","))) {
-      fail(`Official draw ${sourceDraw.draw} differs from the saved archive. No archive changes were made.`);
+      fail(`${sourceLabel} draw ${sourceDraw.draw} differs from the saved archive. No archive changes were made.`);
     }
   }
 
   const latest = archive.draws.at(-1);
   if (!sourceDraws.some((draw) => draw.draw === latest.draw)) {
-    fail(`The official page does not show the saved latest draw ${latest.draw}; it may be stale or incomplete. No archive changes were made.`);
+    fail(`${sourceLabel} does not show the saved latest draw ${latest.draw}; it may be stale or incomplete. No archive changes were made.`);
   }
 
   const additions = sourceDraws.filter((draw) => draw.draw > latest.draw).sort((a, b) => a.draw - b.draw);
@@ -214,11 +345,11 @@ export function mergeResults(archive, sourceDraws, retrievedAt = new Date()) {
   let previousDate = new Date(`${latest.date}T00:00:00.000Z`);
   for (const draw of additions) {
     if (draw.draw !== expectedDraw) {
-      fail(`Official results skip draw ${expectedDraw}; the archive was left untouched.`);
+      fail(`${sourceLabel} skips draw ${expectedDraw}; the archive was left untouched.`);
     }
-    const date = validateDraw(draw, "Official history page");
+    const date = validateDraw(draw, sourceLabel);
     if (date <= previousDate) {
-      fail(`Official draw ${draw.draw} does not advance the saved draw date; the archive was left untouched.`);
+      fail(`${sourceLabel} draw ${draw.draw} does not advance the saved draw date; the archive was left untouched.`);
     }
     expectedDraw += 1;
     previousDate = date;
@@ -273,18 +404,51 @@ export async function atomicWriteArchive(archive, targetPath = archivePath) {
   }
 }
 
-export async function refreshArchive({ targetPath = archivePath, fetchResults = fetchOfficialResults, now = () => new Date() } = {}) {
+export function formatRefreshMessage(result) {
+  const outcome = result.added
+    ? `Added ${result.added} draw${result.added === 1 ? "" : "s"}; archive now ends at draw ${result.archive.coverage.lastDraw} (${result.archive.coverage.lastDate}).`
+    : `Archive is already current at draw ${result.archive.coverage.lastDraw}; no file changes were made.`;
+  if (result.sourceName !== "stats247") return outcome;
+  const reason = result.fallbackReason ? ` Official source failed: ${result.fallbackReason}` : "";
+  return `Used Stats247 as a third-party fallback.${reason} ${outcome}`;
+}
+
+export async function refreshArchive({ targetPath = archivePath, fetchResults = fetchResultsWithFallback, now = () => new Date() } = {}) {
   const archive = validateArchive(JSON.parse(await readFile(targetPath, "utf8")));
-  const sourceDraws = await fetchResults();
+  const fetched = await fetchResults(archive);
+  const sourceDraws = Array.isArray(fetched) ? fetched : fetched.draws;
+  if (!Array.isArray(sourceDraws)) {
+    fail("The results source did not return a draw list. No archive changes were made.");
+  }
+  const sourceName = Array.isArray(fetched) ? "official" : fetched.sourceName;
+  const usedSourceUrl = Array.isArray(fetched) ? sourceUrl : fetched.sourceUrl;
+  const sourceLabel = sourceName === "stats247" ? "Stats247 fallback" : "Official history page";
   const checkedAt = now();
-  const updatedArchive = mergeResults(archive, sourceDraws, checkedAt);
-  if (!updatedArchive) return { archive, added: 0, checkedAt: checkedAt.toISOString() };
+  const updatedArchive = mergeResults(archive, sourceDraws, checkedAt, sourceLabel);
+  if (!updatedArchive) {
+    return {
+      archive,
+      added: 0,
+      checkedAt: checkedAt.toISOString(),
+      sourceName,
+      sourceUrl: usedSourceUrl,
+      fallbackReason: Array.isArray(fetched) ? undefined : fetched.fallbackReason
+    };
+  }
+  updatedArchive.lastUpdateSource = {
+    name: sourceName === "stats247" ? "Stats247 (third-party fallback)" : "Official Malta National Lottery",
+    url: usedSourceUrl,
+    checkedAt: checkedAt.toISOString()
+  };
   validateArchive(updatedArchive);
   await atomicWriteArchive(updatedArchive, targetPath);
   return {
     archive: updatedArchive,
     added: updatedArchive.coverage.lastDraw - archive.coverage.lastDraw,
-    checkedAt: checkedAt.toISOString()
+    checkedAt: checkedAt.toISOString(),
+    sourceName,
+    sourceUrl: usedSourceUrl,
+    fallbackReason: Array.isArray(fetched) ? undefined : fetched.fallbackReason
   };
 }
 
@@ -308,9 +472,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  const message = result.added
-    ? `Added ${result.added} draw${result.added === 1 ? "" : "s"}; archive now ends at draw ${result.archive.coverage.lastDraw} (${result.archive.coverage.lastDate}).`
-    : `Archive is already current at draw ${result.archive.coverage.lastDraw}; no file changes were made.`;
+  const message = formatRefreshMessage(result);
   const { writeCheckState } = await import("./results-check-state.mjs");
   await writeCheckState(checkStatePath, { checkedAt: result.checkedAt, status: "success", message })
     .catch((error) => report(`Archive refresh completed, but its check time could not be saved: ${error.message}`, true));

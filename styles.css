@@ -148,16 +148,6 @@ h2 { margin: 0; font: 500 34px/1 var(--display); letter-spacing: -.035em; }
 .prediction-row .mini-balls { justify-content: space-between; max-width: 280px; gap: 5px; }
 .prediction-row .mini-ball { width: 30px; height: 30px; border-color: #719b8c; color: #d9f3e8; background: #29504c; font-size: 14px; }
 .prediction-row .copy-button { min-height: 30px; }
-.prediction-method { margin-top: 12px; padding: 11px 0 0; border-top: 1px solid #446062; color: #b2c7bd; }
-.prediction-method summary { color: var(--teal); font-size: 11px; cursor: pointer; }
-.prediction-method summary span { float: right; color: var(--coral); }
-.prediction-method p { margin: 10px 0; font-size: 11px; line-height: 1.6; }
-.prediction-method .sequence-heading { margin-top: 16px; color: #93b4a4; font-size: 9px; letter-spacing: .06em; }
-.position-sequence { display: grid; grid-template-columns: 76px minmax(0, 1fr) 40px; align-items: center; gap: 5px 9px; padding: 10px 0; border-top: 1px solid #3c5b59; }
-.position-sequence strong { color: #c2d9cc; font-size: 9px; }
-.sequence-values { font-size: 12px; font-variant-numeric: tabular-nums; }
-.sequence-next { color: var(--teal); font-size: 16px; font-family: var(--display); text-align: right; white-space: nowrap; }
-.position-sequence small { grid-column: 2 / -1; color: #94b2a3; font-size: 9px; }
 .copy-fallback { position: relative; z-index: 1; margin-top: 12px; color: var(--teal); font-size: 11px; }
 .copy-fallback textarea { display: block; width: 100%; margin-top: 6px; padding: 8px; border: 1px solid #7eaca0; border-radius: 3px; color: var(--teal); background: #142e30; }
 .picker-actions { position: relative; z-index: 1; display: flex; align-items: center; gap: 15px; margin-top: 13px; }
@@ -336,8 +326,6 @@ h3 { margin: 0; font: 500 21px/1 var(--display); letter-spacing: -.025em; }
   .number-ball { width: 40px; height: 40px; font-size: 19px; }
   .position-labels { gap: 4px; }
   .position-labels span { width: 40px; }
-  .position-sequence { grid-template-columns: 62px minmax(0, 1fr) 35px; gap: 5px; }
-  .sequence-values { font-size: 11px; }
   .picker-card { padding: 15px 13px; }
   .picker-actions { align-items: flex-start; flex-direction: column; gap: 8px; }
   .draw-aside { grid-template-columns: 1fr; }
@@ -361,3 +349,4 @@ h3 { margin: 0; font: 500 21px/1 var(--display); letter-spacing: -.025em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+

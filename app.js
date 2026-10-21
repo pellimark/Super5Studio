@@ -618,15 +618,30 @@ function watchForArchiveUpdates() {
   scheduleResultsPoll(false);
 }
 
+async function loadInitialSnapshot() {
+  let lastError;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      const response = await fetch(RESULTS_PATH, { cache: "no-store" });
+      if (!response.ok) throw new Error("The results service could not be reached");
+      const snapshot = await response.json();
+      const incoming = snapshot.archive;
+      if (!incoming || !Array.isArray(incoming.draws) || incoming.draws.length === 0 ||
+          !incoming.coverage || incoming.coverage.drawCount !== incoming.draws.length ||
+          incoming.coverage.lastDraw !== incoming.draws.at(-1)?.draw) throw new Error("Archive file is incomplete");
+      return snapshot;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 4) await new Promise((resolve) => window.setTimeout(resolve, 250 * (2 ** attempt)));
+    }
+  }
+  throw lastError;
+}
+
 async function start() {
   try {
-    const response = await fetch(RESULTS_PATH, { cache: "no-store" });
-    if (!response.ok) throw new Error("The results service could not be reached");
-    const snapshot = await response.json();
+    const snapshot = await loadInitialSnapshot();
     archive = snapshot.archive;
-    if (!archive || !Array.isArray(archive.draws) || archive.draws.length === 0 ||
-        !archive.coverage || archive.coverage.drawCount !== archive.draws.length ||
-        archive.coverage.lastDraw !== archive.draws.at(-1)?.draw) throw new Error("Archive file is incomplete");
     attachEvents();
     renderArchiveData();
     if (selectedMode === "uniform" && !firstQuickPick) generateSelection();

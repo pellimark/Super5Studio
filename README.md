@@ -61,7 +61,7 @@ The app can run as a Render Node web service with `npm start` as its start comma
 Render services use an ephemeral filesystem by default. The app can refresh its archive while an instance is running, but those writes are lost after a restart or deploy unless the service has persistent storage. Render persistent disks require a paid web service; the free web-service plan has no persistent disk. The Windows task only updates local project files and does not update a hosted copy.
 ## Archive and pick styles
 
-`data/super5-draws.json` preserves the official source metadata and the operator archive snapshot retrieved on 20 October 2026. It starts at draw 1 on 13 July 2022 and contains 393 draws through draw 393 on 16 October 2026. Draws 1–258 use 5/45; draw 259 onward uses 5/49, following the [official format announcement](https://instore.lottery.mt/new-super5-game-format/). This snapshot does not include results before draw 1 in the operator archive.
+`data/super5-draws.json` stores the draw results retrieved from the official source on 20 October 2026. It starts at draw 1 on 13 July 2022 and contains 393 draws through draw 393 on 16 October 2026. Draws 1–258 use 5/45; draw 259 onward uses 5/49, following the [official format announcement](https://instore.lottery.mt/new-super5-game-format/). It does not include results before draw 1 in this archive.
 
 Quick pick samples five different numbers uniformly. Recent favourites, Long view, and Overdue list summarize archived frequency or draw gaps.
 

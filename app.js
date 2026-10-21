@@ -252,13 +252,14 @@ function updateLine() {
   const quickPickTitle = showingSavedDrawPick
     ? "YOUR DRAW " + firstQuickPickDraw + " LUCKY NUMBERS"
     : "ANOTHER PICK FOR DRAW " + firstQuickPickDraw;
+  const orbitQuickPickTitle = showingSavedDrawPick ? "DRAW " + firstQuickPickDraw + " PICK" : "QUICK PICK";
   setBallRow(line, numbers, false, Boolean(generatedNumbers));
   $("#line-title").textContent = selectedMode === "uniform" ? quickPickTitle : MODE_LABELS[selectedMode];
   $("#line-caption").textContent = generatedNumbers ? MODE_CAPTIONS[selectedMode] : "Press spin to generate using this style.";
   $("#line-seq").textContent = predicting && predictedLines.length
     ? "OUTCOME 01 / " + String(predictedLines.length).padStart(2, "0")
     : generatedNumbers ? "LINE " + String(generatedCount).padStart(2, "0") : "LINE 01";
-  $("#heading-line-title").textContent = selectedMode === "uniform" ? quickPickTitle : "YOUR LINE";
+  $("#heading-line-title").textContent = selectedMode === "uniform" ? orbitQuickPickTitle : "YOUR LINE";
   $("#heading-line-seq").textContent = !generatedNumbers
     ? "BALLS IN MOTION"
     : predicting ? "OUTCOME 01" : "LINE " + String(generatedCount).padStart(2, "0");

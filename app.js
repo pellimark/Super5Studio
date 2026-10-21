@@ -176,7 +176,6 @@ function setFirstQuickPickForDraw(drawNumber) {
   firstQuickPickDraw = drawNumber;
   firstQuickPick = record.numbers.slice();
   renderFirstQuickPick();
-  renderDrawLuckyLine();
   return firstQuickPick.slice();
 }
 
@@ -196,6 +195,9 @@ function cancelOrbitReveal() {
 function resetOrbitNumbers() {
   cancelOrbitReveal();
   setSelectionRevealing(false);
+  $("#heading-art").classList.remove("is-spinning");
+  $("#generate-line").classList.remove("is-spinning");
+  $("#spin-status").textContent = "";
   $$(".orbit-ball").forEach((ball) => {
     ball.textContent = "";
     ball.classList.remove("is-revealed");
@@ -205,20 +207,40 @@ function resetOrbitNumbers() {
   updateOrbitCaption();
 }
 
+function setOrbitNumbers(numbers, mode = "uniform") {
+  if (!numbers) return;
+  cancelOrbitReveal();
+  setSelectionRevealing(false);
+  const art = $("#heading-art");
+  art.classList.remove("is-spinning");
+  $$(".orbit-ball").forEach((ball, index) => {
+    ball.textContent = String(numbers[index]);
+    ball.classList.remove("is-waiting", "is-revealed");
+  });
+  art.setAttribute("aria-label", "Your " + (mode === "uniform" ? "quick pick" : "line") + " is " + numbers.join(", "));
+  updateOrbitCaption();
+}
+
 function renderDrawLuckyLine() {
   if (!firstQuickPick) return;
+  $("#primary-line-result").classList.add("draw-lucky-result");
   $("#line-title").textContent = "YOUR DRAW " + firstQuickPickDraw + " LUCKY NUMBERS";
   $("#line-seq").textContent = "SAVED PICK";
   $("#line-caption").textContent = "Your first pick for this draw. It stays here while you explore.";
   setBallRow($("#generated-line"), firstQuickPick, false);
   $("#copy-line").disabled = false;
-  updateOrbitCaption();
+}
+
+function renderPrimaryLine() {
+  renderDrawLuckyLine();
 }
 
 function setSelectionRevealing(revealing) {
   selectionIsRevealing = revealing;
   $("#generate-line").disabled = revealing || (selectedMode !== "predict" && extraLines.length >= MAX_PICK_LINES - 1);
+  $("#clear-extra-lines").disabled = revealing;
   $$(".mode-option").forEach((button) => { button.disabled = revealing; });
+  $$("#outcome-count, #outcome-diversity").forEach((control) => { control.disabled = revealing; });
 }
 
 function updateOrbitCaption() {
@@ -229,15 +251,20 @@ function updateOrbitCaption() {
     return;
   }
   const latest = extraLines.at(-1);
-  $("#heading-line-title").textContent = latest ? "YOUR LINE" : "DRAW " + firstQuickPickDraw + " PICK";
-  $("#heading-line-seq").textContent = latest
-    ? "LINE " + String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES
-    : "FIRST LINE";
+  if (latest) {
+    $("#heading-line-title").textContent = "YOUR LINE";
+    $("#heading-line-seq").textContent = "LINE " + String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES;
+    return;
+  }
+  $("#heading-line-title").textContent = "DRAW " + firstQuickPickDraw + " PICK";
+  $("#heading-line-seq").textContent = "FIRST LINE";
 }
 
 function revealOrbitNumbers(numbers, mode, onComplete) {
   cancelOrbitReveal();
   const revealVersion = orbitRevealVersion;
+  const art = $("#heading-art");
+  art.classList.add("is-spinning");
   const balls = $$(".orbit-ball");
   balls.forEach((ball) => {
     ball.textContent = "";
@@ -248,8 +275,10 @@ function revealOrbitNumbers(numbers, mode, onComplete) {
   const finish = () => {
     if (revealVersion !== orbitRevealVersion) return;
     orbitRevealTimer = null;
+    art.classList.remove("is-spinning");
     const pickName = mode === "uniform" ? "quick pick" : "line";
-    $("#heading-art").setAttribute("aria-label", "Your " + pickName + " is " + numbers.join(", "));
+    art.setAttribute("aria-label", "Your " + pickName + " is " + numbers.join(", "));
+    $("#spin-status").textContent = "Numbers revealed: " + numbers.join(", ") + ".";
     onComplete();
   };
   const reveal = (index) => {
@@ -277,10 +306,10 @@ function revealOrbitNumbers(numbers, mode, onComplete) {
   orbitRevealTimer = window.setTimeout(() => reveal(0), 100);
 }
 
-function updateLine() {
+function updateLine(animateLatest = false) {
   const predicting = selectedMode === "predict";
-  renderExtraLines();
-  $("#copy-line").disabled = !firstQuickPick;
+  renderPrimaryLine();
+  renderExtraLines(animateLatest);
   $("#copy-line").textContent = "COPY";
   $("#copy-all-outcomes").textContent = "COPY ALL";
   $("#copy-all-outcomes").hidden = !predicting || predictedLines.length < 2;
@@ -296,11 +325,15 @@ function updateLine() {
 
 function presentSelection(numbers, mode, onComplete) {
   setSelectionRevealing(true);
+  $("#generate-line").classList.add("is-spinning");
+  $("#generate-label").textContent = mode === "predict" ? "Building outcomes…" : "Spinning…";
+  $("#spin-status").textContent = mode === "predict" ? "Building a candidate line." : "Spinning a new line.";
   $("#heading-line-title").textContent = mode === "uniform" ? "QUICK PICK" : MODE_LABELS[mode];
   $("#heading-line-seq").textContent = "SPINNING";
   revealOrbitNumbers(numbers, mode, () => {
     setSelectionRevealing(false);
     onComplete();
+    $("#generate-line").classList.remove("is-spinning");
   });
 }
 
@@ -319,32 +352,32 @@ function generateSelection() {
     presentSelection(numbers, mode, () => {
       generatedNumbers = numbers.slice();
       updateLine();
+      $("#spin-status").textContent = "Position predictor outcome 1 of " + predictedLines.length + ": " + numbers.join(", ") + ".";
     });
     return;
   }
 
   if (extraLines.length >= MAX_PICK_LINES - 1) return;
-  predictedLines = [];
-  positionModel = null;
-  generatedNumbers = null;
   const numbers = pickLine(mode);
   presentSelection(numbers, mode, () => {
     extraLines.push({ numbers: numbers.slice(), mode });
-    updateLine();
+    updateLine(true);
+    $("#spin-status").textContent = "Added line " + (extraLines.length + 1) + " of " + MAX_PICK_LINES + " for draw " + firstQuickPickDraw + ": " + numbers.join(", ") + ".";
   });
 }
 
-function renderExtraLines() {
+function renderExtraLines(animateLatest = false) {
   const section = $("#extra-lines-section");
   const host = $("#extra-lines");
   host.replaceChildren();
   section.hidden = extraLines.length === 0;
   $("#clear-extra-lines").hidden = extraLines.length === 0;
-  $("#extra-lines-count").textContent = "LINES " + String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES;
+  $("#extra-lines-count").textContent = String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES + " LINES";
   extraLines.forEach(({ numbers, mode }, index) => {
     const lineNumber = index + 2;
     const row = document.createElement("li");
     row.className = "extra-line-row";
+    if (animateLatest && index === extraLines.length - 1) row.classList.add("is-entering");
     const heading = document.createElement("div");
     heading.className = "extra-line-heading";
     const indexLabel = document.createElement("span");
@@ -356,7 +389,7 @@ function renderExtraLines() {
     heading.append(indexLabel, modeLabel);
     const balls = document.createElement("div");
     balls.className = "mini-balls extra-line-balls";
-    setBallRow(balls, numbers, true);
+    setBallRow(balls, numbers, true, animateLatest && index === extraLines.length - 1);
     const copy = document.createElement("button");
     copy.className = "copy-button extra-line-copy";
     copy.type = "button";
@@ -370,11 +403,11 @@ function renderExtraLines() {
 
 function clearExtraLines() {
   extraLines = [];
-  renderExtraLines();
+  updateLine();
   const currentOrbitNumbers = selectedMode === "predict" && generatedNumbers ? generatedNumbers : firstQuickPick;
   const currentOrbitMode = selectedMode === "predict" && generatedNumbers ? "predict" : "uniform";
-  if (currentOrbitNumbers) presentSelection(currentOrbitNumbers, currentOrbitMode, updateLine);
-  else updateLine();
+  setOrbitNumbers(currentOrbitNumbers, currentOrbitMode);
+  $("#spin-status").textContent = "Additional lines cleared. Your saved first pick for draw " + firstQuickPickDraw + " is unchanged.";
 }
 async function copyNumbers(button, lines) {
   const content = lines.map((numbers) => numbers.join(" · ")).join("\n");
@@ -417,7 +450,7 @@ function renderPredictions() {
     copy.className = "copy-button";
     copy.type = "button";
     copy.textContent = "↗ COPY";
-    copy.setAttribute("aria-label", "Copy outcome " + (index + 2));
+    copy.setAttribute("aria-label", "Copy outcome " + (index + 1));
     copy.addEventListener("click", () => { void copyNumbers(copy, [numbers]); });
     row.append(label, balls, copy);
     host.append(row);
@@ -610,7 +643,15 @@ function setEra(era) {
   renderBacktest();
   renderArchive(true);
   resetOrbitNumbers();
+  showSelectedModePrimary();
+}
+
+function showSelectedModePrimary() {
+  generatedNumbers = null;
+  predictedLines = [];
+  positionModel = null;
   updateLine();
+  setOrbitNumbers(firstQuickPick);
 }
 
 function showView(view) {
@@ -657,8 +698,9 @@ function attachEvents() {
     });
   });
   $("#copy-line").addEventListener("click", async () => {
-    if (!firstQuickPick) return;
-    await copyNumbers($("#copy-line"), [firstQuickPick]);
+    const numbers = selectedMode === "uniform" ? firstQuickPick : generatedNumbers;
+    if (!numbers) return;
+    await copyNumbers($("#copy-line"), [numbers]);
   });
   $("#copy-all-outcomes").addEventListener("click", async () => {
     if (predictedLines.length) await copyNumbers($("#copy-all-outcomes"), predictedLines);
@@ -718,8 +760,7 @@ async function syncResults() {
     const archiveChanged = !archive || incoming.coverage.lastDraw !== previousDraw || incoming.retrievedAt !== archive.retrievedAt;
     archive = incoming;
     if (archiveChanged) {
-      let nextDrawPick = null;
-      if (drawAdvanced) nextDrawPick = setFirstQuickPickForDraw(targetDrawNumber());
+      if (drawAdvanced) setFirstQuickPickForDraw(targetDrawNumber());
       if (drawAdvanced) {
         extraLines = [];
         generatedNumbers = null;
@@ -729,7 +770,7 @@ async function syncResults() {
       renderArchiveData();
       if (drawAdvanced) {
         resetOrbitNumbers();
-        presentSelection(nextDrawPick, "uniform", updateLine);
+        showSelectedModePrimary();
       }
     }
     renderResultsStatus(snapshot);
@@ -777,7 +818,7 @@ async function start() {
     const openingPick = setFirstQuickPickForDraw(targetDrawNumber());
     attachEvents();
     renderArchiveData();
-    if (selectedMode === "uniform") presentSelection(openingPick, "uniform", updateLine);
+    presentSelection(openingPick, "uniform", updateLine);
     renderResultsStatus(snapshot);
     watchForArchiveUpdates();
   } catch (error) {

@@ -32,6 +32,7 @@ let generatedNumbers = null;
 let generatedCount = 0;
 let firstQuickPick = null;
 let firstQuickPickDraw = null;
+let showingSavedDrawPick = true;
 let quickPicksByDraw = {};
 let orbitRevealVersion = 0;
 let orbitRevealTimer = null;
@@ -46,6 +47,10 @@ const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selec
 
 function currentRules() {
   return ERA_RULES[selectedEra];
+}
+
+function targetDrawNumber() {
+  return nextScheduledDraw(archive.draws.at(-1)).draw;
 }
 
 function eraDraws() {
@@ -169,6 +174,7 @@ function setFirstQuickPickForDraw(drawNumber) {
   }
   firstQuickPickDraw = drawNumber;
   firstQuickPick = record.numbers.slice();
+  showingSavedDrawPick = true;
   renderFirstQuickPick();
   return firstQuickPick.slice();
 }
@@ -243,13 +249,16 @@ function updateLine() {
   const predicting = selectedMode === "predict";
   const line = $("#generated-line");
   const numbers = generatedNumbers || [null, null, null, null, null];
+  const quickPickTitle = showingSavedDrawPick
+    ? "YOUR DRAW " + firstQuickPickDraw + " LUCKY NUMBERS"
+    : "ANOTHER PICK FOR DRAW " + firstQuickPickDraw;
   setBallRow(line, numbers, false, Boolean(generatedNumbers));
-  $("#line-title").textContent = MODE_LABELS[selectedMode];
+  $("#line-title").textContent = selectedMode === "uniform" ? quickPickTitle : MODE_LABELS[selectedMode];
   $("#line-caption").textContent = generatedNumbers ? MODE_CAPTIONS[selectedMode] : "Press spin to generate using this style.";
   $("#line-seq").textContent = predicting && predictedLines.length
     ? "OUTCOME 01 / " + String(predictedLines.length).padStart(2, "0")
     : generatedNumbers ? "LINE " + String(generatedCount).padStart(2, "0") : "LINE 01";
-  $("#heading-line-title").textContent = selectedMode === "uniform" ? "YOUR QUICK PICK" : "YOUR LINE";
+  $("#heading-line-title").textContent = selectedMode === "uniform" ? quickPickTitle : "YOUR LINE";
   $("#heading-line-seq").textContent = !generatedNumbers
     ? "BALLS IN MOTION"
     : predicting ? "OUTCOME 01" : "LINE " + String(generatedCount).padStart(2, "0");
@@ -279,6 +288,7 @@ function presentSelection(numbers, mode) {
 
 function generateSelection() {
   const mode = selectedMode;
+  showingSavedDrawPick = false;
   let numbers;
   if (mode === "predict") {
     positionModel = buildPositionModel(eraDraws(), currentRules().max);
@@ -637,7 +647,7 @@ async function syncResults() {
     archive = incoming;
     if (archiveChanged) {
       let nextDrawPick = null;
-      if (drawAdvanced) nextDrawPick = setFirstQuickPickForDraw(incoming.coverage.lastDraw);
+      if (drawAdvanced) nextDrawPick = setFirstQuickPickForDraw(targetDrawNumber());
       if (drawAdvanced && selectedMode === "predict") {
         generatedNumbers = null;
         predictedLines = [];
@@ -691,7 +701,7 @@ async function start() {
     const snapshot = await loadInitialSnapshot();
     archive = snapshot.archive;
     loadQuickPicks();
-    const openingPick = setFirstQuickPickForDraw(archive.coverage.lastDraw);
+    const openingPick = setFirstQuickPickForDraw(targetDrawNumber());
     attachEvents();
     renderArchiveData();
     if (selectedMode === "uniform") presentSelection(openingPick, "uniform");

@@ -5,6 +5,7 @@ import { nextScheduledDraw } from "./next-draw.js";
 
 const RESULTS_PATH = "/api/results";
 const QUICK_PICKS_STORAGE_KEY = "super5.quickPicksByDraw.v1";
+const MAX_PICK_LINES = 10;
 const ERA_RULES = {
   current: { max: 49, firstDraw: 259, format: "5 / 49", label: "CURRENT FORMAT" },
   classic: { max: 45, firstDraw: 1, lastDraw: 258, format: "5 / 45", label: "ARCHIVE FORMAT" }
@@ -29,13 +30,13 @@ let activeView = "pick";
 let selectedEra = "current";
 let selectedMode = "uniform";
 let generatedNumbers = null;
-let generatedCount = 0;
+let extraLines = [];
 let firstQuickPick = null;
 let firstQuickPickDraw = null;
-let showingSavedDrawPick = true;
 let quickPicksByDraw = {};
 let orbitRevealVersion = 0;
 let orbitRevealTimer = null;
+let selectionIsRevealing = false;
 let predictedLines = [];
 let positionModel = null;
 let archiveLimit = 14;
@@ -174,8 +175,8 @@ function setFirstQuickPickForDraw(drawNumber) {
   }
   firstQuickPickDraw = drawNumber;
   firstQuickPick = record.numbers.slice();
-  showingSavedDrawPick = true;
   renderFirstQuickPick();
+  renderDrawLuckyLine();
   return firstQuickPick.slice();
 }
 
@@ -194,13 +195,44 @@ function cancelOrbitReveal() {
 
 function resetOrbitNumbers() {
   cancelOrbitReveal();
+  setSelectionRevealing(false);
   $$(".orbit-ball").forEach((ball) => {
     ball.textContent = "";
     ball.classList.remove("is-revealed");
     ball.classList.add("is-waiting");
   });
   $("#heading-art").setAttribute("aria-label", "Your current line is waiting to be drawn");
-  renderFirstQuickPick();
+  updateOrbitCaption();
+}
+
+function renderDrawLuckyLine() {
+  if (!firstQuickPick) return;
+  $("#line-title").textContent = "YOUR DRAW " + firstQuickPickDraw + " LUCKY NUMBERS";
+  $("#line-seq").textContent = "SAVED PICK";
+  $("#line-caption").textContent = "Your first pick for this draw. It stays here while you explore.";
+  setBallRow($("#generated-line"), firstQuickPick, false);
+  $("#copy-line").disabled = false;
+  updateOrbitCaption();
+}
+
+function setSelectionRevealing(revealing) {
+  selectionIsRevealing = revealing;
+  $("#generate-line").disabled = revealing || (selectedMode !== "predict" && extraLines.length >= MAX_PICK_LINES - 1);
+  $$(".mode-option").forEach((button) => { button.disabled = revealing; });
+}
+
+function updateOrbitCaption() {
+  if (selectionIsRevealing) return;
+  if (selectedMode === "predict" && generatedNumbers) {
+    $("#heading-line-title").textContent = "POSITION PREDICTOR";
+    $("#heading-line-seq").textContent = "OUTCOME 01";
+    return;
+  }
+  const latest = extraLines.at(-1);
+  $("#heading-line-title").textContent = latest ? "YOUR LINE" : "DRAW " + firstQuickPickDraw + " PICK";
+  $("#heading-line-seq").textContent = latest
+    ? "LINE " + String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES
+    : "FIRST LINE";
 }
 
 function revealOrbitNumbers(numbers, mode, onComplete) {
@@ -247,65 +279,103 @@ function revealOrbitNumbers(numbers, mode, onComplete) {
 
 function updateLine() {
   const predicting = selectedMode === "predict";
-  const line = $("#generated-line");
-  const numbers = generatedNumbers || [null, null, null, null, null];
-  const quickPickTitle = showingSavedDrawPick
-    ? "YOUR DRAW " + firstQuickPickDraw + " LUCKY NUMBERS"
-    : "ANOTHER PICK FOR DRAW " + firstQuickPickDraw;
-  const orbitQuickPickTitle = showingSavedDrawPick ? "DRAW " + firstQuickPickDraw + " PICK" : "QUICK PICK";
-  setBallRow(line, numbers, false, Boolean(generatedNumbers));
-  $("#line-title").textContent = selectedMode === "uniform" ? quickPickTitle : MODE_LABELS[selectedMode];
-  $("#line-caption").textContent = generatedNumbers ? MODE_CAPTIONS[selectedMode] : "Press spin to generate using this style.";
-  $("#line-seq").textContent = predicting && predictedLines.length
-    ? "OUTCOME 01 / " + String(predictedLines.length).padStart(2, "0")
-    : generatedNumbers ? "LINE " + String(generatedCount).padStart(2, "0") : "LINE 01";
-  $("#heading-line-title").textContent = selectedMode === "uniform" ? orbitQuickPickTitle : "YOUR LINE";
-  $("#heading-line-seq").textContent = !generatedNumbers
-    ? "BALLS IN MOTION"
-    : predicting ? "OUTCOME 01" : "LINE " + String(generatedCount).padStart(2, "0");
-  $("#copy-line").disabled = !generatedNumbers;
-  $("#copy-line").textContent = "↗ COPY";
-  $("#copy-all-outcomes").textContent = "↗ COPY ALL";
+  renderExtraLines();
+  $("#copy-line").disabled = !firstQuickPick;
+  $("#copy-line").textContent = "COPY";
+  $("#copy-all-outcomes").textContent = "COPY ALL";
   $("#copy-all-outcomes").hidden = !predicting || predictedLines.length < 2;
   $("#prediction-controls").hidden = !predicting;
   $("#position-labels").hidden = !predicting;
-  $("#prediction-results").hidden = !predicting || !generatedNumbers;
+  $("#prediction-results").hidden = !predicting || !generatedNumbers || !predictedLines.length;
   $("#generate-label").textContent = predicting ? "Build outcomes" : "Spin a line";
+  if (!predicting && extraLines.length >= MAX_PICK_LINES - 1) $("#generate-label").textContent = "Line limit reached";
+  $("#generate-line").disabled = selectionIsRevealing || (!predicting && extraLines.length >= MAX_PICK_LINES - 1);
+  updateOrbitCaption();
   renderPredictions();
 }
 
-function presentSelection(numbers, mode) {
-  generatedNumbers = null;
-  updateLine();
-  $("#line-caption").textContent = "Drawing your five numbers…";
-  $("#line-seq").textContent = "DRAWING";
+function presentSelection(numbers, mode, onComplete) {
+  setSelectionRevealing(true);
+  $("#heading-line-title").textContent = mode === "uniform" ? "QUICK PICK" : MODE_LABELS[mode];
+  $("#heading-line-seq").textContent = "SPINNING";
   revealOrbitNumbers(numbers, mode, () => {
-    generatedNumbers = numbers.slice();
-    generatedCount += 1;
-    renderFirstQuickPick();
-    updateLine();
+    setSelectionRevealing(false);
+    onComplete();
   });
 }
 
 function generateSelection() {
   const mode = selectedMode;
-  showingSavedDrawPick = false;
-  let numbers;
+  if (selectionIsRevealing) return;
   if (mode === "predict") {
     positionModel = buildPositionModel(eraDraws(), currentRules().max);
     const diversity = $("#outcome-diversity").value;
     const setting = DIVERSITY_SETTINGS[diversity];
     $("#diversity-rule").textContent = setting.label + ": any two lines share at most " + setting.maxShared + " numbers.";
     predictedLines = predictOutcomes(positionModel, currentRules().max, Number($("#outcome-count").value), diversity);
-    numbers = predictedLines[0];
-  } else {
-    predictedLines = [];
-    positionModel = null;
-    numbers = pickLine(mode);
+    const numbers = predictedLines[0];
+    if (!numbers) return;
+    generatedNumbers = null;
+    presentSelection(numbers, mode, () => {
+      generatedNumbers = numbers.slice();
+      updateLine();
+    });
+    return;
   }
-  presentSelection(numbers, mode);
+
+  if (extraLines.length >= MAX_PICK_LINES - 1) return;
+  predictedLines = [];
+  positionModel = null;
+  generatedNumbers = null;
+  const numbers = pickLine(mode);
+  presentSelection(numbers, mode, () => {
+    extraLines.push({ numbers: numbers.slice(), mode });
+    updateLine();
+  });
 }
 
+function renderExtraLines() {
+  const section = $("#extra-lines-section");
+  const host = $("#extra-lines");
+  host.replaceChildren();
+  section.hidden = extraLines.length === 0;
+  $("#clear-extra-lines").hidden = extraLines.length === 0;
+  $("#extra-lines-count").textContent = "LINES " + String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES;
+  extraLines.forEach(({ numbers, mode }, index) => {
+    const lineNumber = index + 2;
+    const row = document.createElement("li");
+    row.className = "extra-line-row";
+    const heading = document.createElement("div");
+    heading.className = "extra-line-heading";
+    const indexLabel = document.createElement("span");
+    indexLabel.className = "extra-line-index";
+    indexLabel.textContent = "LINE " + String(lineNumber).padStart(2, "0");
+    const modeLabel = document.createElement("span");
+    const modeTitle = mode === "uniform" ? "ANOTHER QUICK PICK" : MODE_LABELS[mode];
+    modeLabel.textContent = modeTitle + " FOR DRAW " + firstQuickPickDraw;
+    heading.append(indexLabel, modeLabel);
+    const balls = document.createElement("div");
+    balls.className = "mini-balls extra-line-balls";
+    setBallRow(balls, numbers, true);
+    const copy = document.createElement("button");
+    copy.className = "copy-button extra-line-copy";
+    copy.type = "button";
+    copy.textContent = "COPY";
+    copy.setAttribute("aria-label", "Copy line " + lineNumber);
+    copy.addEventListener("click", () => { void copyNumbers(copy, [numbers]); });
+    row.append(heading, balls, copy);
+    host.append(row);
+  });
+}
+
+function clearExtraLines() {
+  extraLines = [];
+  renderExtraLines();
+  const currentOrbitNumbers = selectedMode === "predict" && generatedNumbers ? generatedNumbers : firstQuickPick;
+  const currentOrbitMode = selectedMode === "predict" && generatedNumbers ? "predict" : "uniform";
+  if (currentOrbitNumbers) presentSelection(currentOrbitNumbers, currentOrbitMode, updateLine);
+  else updateLine();
+}
 async function copyNumbers(button, lines) {
   const content = lines.map((numbers) => numbers.join(" · ")).join("\n");
   const label = button.id === "copy-all-outcomes" ? "↗ COPY ALL" : "↗ COPY";
@@ -333,13 +403,13 @@ function renderPredictions() {
     " · " + DIVERSITY_SETTINGS[$("#outcome-diversity").value].label +
     " · " + eraDraws().length + " draws in the " + currentRules().format + " era";
   $("#prediction-limit-note").hidden = predictedLines.length >= Number($("#outcome-count").value);
-  $("#prediction-alternatives").hidden = predictedLines.length < 2;
-  predictedLines.slice(1).forEach((numbers, index) => {
+  $("#prediction-alternatives").hidden = predictedLines.length < 1;
+  predictedLines.forEach((numbers, index) => {
     const row = document.createElement("li");
     row.className = "prediction-row";
     const label = document.createElement("span");
     label.className = "prediction-index";
-    label.textContent = String(index + 2).padStart(2, "0");
+    label.textContent = String(index + 1).padStart(2, "0");
     const balls = document.createElement("div");
     balls.className = "mini-balls";
     setBallRow(balls, numbers, true);
@@ -526,6 +596,7 @@ function renderArchive(resetLimit = false) {
 function setEra(era) {
   selectedEra = era;
   generatedNumbers = null;
+  extraLines = [];
   predictedLines = [];
   positionModel = null;
   $$(".era-button").forEach((button) => {
@@ -538,11 +609,8 @@ function setEra(era) {
   renderNumbers();
   renderBacktest();
   renderArchive(true);
-  if (selectedMode === "predict") generateSelection();
-  else {
-    resetOrbitNumbers();
-    updateLine();
-  }
+  resetOrbitNumbers();
+  updateLine();
 }
 
 function showView(view) {
@@ -575,18 +643,22 @@ function attachEvents() {
         option.classList.toggle("is-selected", selected);
         option.setAttribute("aria-pressed", String(selected));
       });
-      generateSelection();
+      generatedNumbers = null;
+      predictedLines = [];
+      positionModel = null;
+      updateLine();
     });
   });
   $("#generate-line").addEventListener("click", generateSelection);
+  $("#clear-extra-lines").addEventListener("click", clearExtraLines);
   $$("#outcome-count, #outcome-diversity").forEach((control) => {
     control.addEventListener("change", () => {
       if (selectedMode === "predict") generateSelection();
     });
   });
   $("#copy-line").addEventListener("click", async () => {
-    if (!generatedNumbers) return;
-    await copyNumbers($("#copy-line"), [generatedNumbers]);
+    if (!firstQuickPick) return;
+    await copyNumbers($("#copy-line"), [firstQuickPick]);
   });
   $("#copy-all-outcomes").addEventListener("click", async () => {
     if (predictedLines.length) await copyNumbers($("#copy-all-outcomes"), predictedLines);
@@ -621,8 +693,7 @@ function renderArchiveData() {
   renderNumbers();
   renderBacktest();
   renderArchive();
-  if (selectedMode === "predict" && !generatedNumbers) generateSelection();
-  else updateLine();
+  updateLine();
 }
 
 function scheduleResultsPoll(refreshing) {
@@ -649,15 +720,16 @@ async function syncResults() {
     if (archiveChanged) {
       let nextDrawPick = null;
       if (drawAdvanced) nextDrawPick = setFirstQuickPickForDraw(targetDrawNumber());
-      if (drawAdvanced && selectedMode === "predict") {
+      if (drawAdvanced) {
+        extraLines = [];
         generatedNumbers = null;
         predictedLines = [];
         positionModel = null;
       }
       renderArchiveData();
-      if (drawAdvanced && selectedMode === "uniform") {
-        generatedCount = 0;
-        presentSelection(nextDrawPick, "uniform");
+      if (drawAdvanced) {
+        resetOrbitNumbers();
+        presentSelection(nextDrawPick, "uniform", updateLine);
       }
     }
     renderResultsStatus(snapshot);
@@ -705,7 +777,7 @@ async function start() {
     const openingPick = setFirstQuickPickForDraw(targetDrawNumber());
     attachEvents();
     renderArchiveData();
-    if (selectedMode === "uniform") presentSelection(openingPick, "uniform");
+    if (selectedMode === "uniform") presentSelection(openingPick, "uniform", updateLine);
     renderResultsStatus(snapshot);
     watchForArchiveUpdates();
   } catch (error) {
@@ -715,4 +787,3 @@ async function start() {
 }
 
 start();
-

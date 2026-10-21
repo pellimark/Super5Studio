@@ -79,6 +79,10 @@ h1 em { color: #39776c; font-weight: 500; }
 .orbit { position: absolute; top: 18px; left: 71px; width: 104px; height: 104px; border: 1px solid #799387; border-radius: 50%; transform: rotate(-28deg) scaleX(1.45); }
 .orbit-two { transform: rotate(50deg) scaleX(1.43); border-color: #b7a984; }
 .orbit-ball { position: absolute; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #fffdf7; border-radius: 50%; box-shadow: 0 4px 10px #2137352c; color: var(--navy); background: var(--teal); font: bold 12px var(--body); }
+.orbit-ball.is-waiting { color: transparent; animation: orbit-wait .65s ease-in-out infinite alternate; }
+.orbit-ball.is-revealed { animation: orbit-ball-reveal .3s cubic-bezier(.15,.9,.25,1.5) both; }
+@keyframes orbit-wait { from { opacity: .38; transform: scale(.84); } to { opacity: .82; transform: scale(1); } }
+@keyframes orbit-ball-reveal { from { opacity: .2; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
 .orbit-ball-a { top: 17px; left: 123px; }.orbit-ball-b { top: 55px; left: 47px; background: var(--coral); color: #fffdf7; }.orbit-ball-c { top: 64px; left: 162px; background: var(--yellow); }.orbit-ball-d { top: 80px; left: 78px; background: #fffdf7; }.orbit-ball-e { top: 101px; left: 18px; background: var(--yellow); }
 .orbit-star { position: absolute; top: 52px; left: 116px; color: var(--navy); font-size: 23px; }
 .art-caption { position: absolute; right: 50px; bottom: 16px; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; color: #668078; font-size: 9px; letter-spacing: .1em; }
@@ -356,6 +360,7 @@ h3 { margin: 0; font: 500 21px/1 var(--display); letter-spacing: -.025em; }
   .page-footnote { flex-direction: column; gap: 5px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .orbit-ball.is-waiting, .orbit-ball.is-revealed { animation: none; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 

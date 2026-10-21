@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f3efe5">
-    <meta name="description" content="A playful Super5 number picker and draw history explorer using archived Malta results.">
-    <title>Super5 Studio — Malta draw room</title>
+    <meta name="description" content="Browse Malta Super5 results and history, compare number frequencies, and explore sample picks from past draws. No pick predicts results or improves the odds.">
+    <title>Malta Super5 Results &amp; History | Frequencies &amp; Picks</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
   </head>
@@ -23,7 +23,7 @@
             <span class="nav-index">01</span><span>Pick a line</span><span class="nav-arrow">↗</span>
           </button>
           <button class="nav-link" data-view-target="numbers">
-            <span class="nav-index">02</span><span>Number board</span><span class="nav-arrow">↗</span>
+            <span class="nav-index">02</span><span>Number frequencies</span><span class="nav-arrow">↗</span>
           </button>
           <button class="nav-link" data-view-target="history">
             <span class="nav-index">03</span><span>Draw archive</span><span class="nav-arrow">↗</span>
@@ -52,8 +52,8 @@
         <header class="page-heading">
           <div class="heading-copy">
             <p class="eyebrow"><span class="eyebrow-line"></span> A LITTLE HISTORY, A LITTLE LUCK</p>
-            <h1>Numbers in<br><em>motion.</em></h1>
-            <p class="heading-intro">Explore Malta’s Super5 draws, try a few number-picking styles, and see what the archive can—and can’t—tell us.</p>
+            <h1>Malta Super5<br><em>Results &amp; History</em></h1>
+            <p class="heading-intro">Browse Malta Super5 draw results and history, explore number frequencies, and try sample picks based on past draws. Past results do not predict future draws or improve the odds.</p>
           </div>
           <div class="heading-art" id="heading-art" role="img" aria-label="Your current line is waiting to be drawn">
             <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -96,15 +96,15 @@
                   <span class="mode-icon">◌</span><span class="mode-name">Overdue list</span><span class="mode-detail">Longest gap since last appearance.</span>
                 </button>
                 <button class="mode-option" data-mode="predict" aria-pressed="false">
-                  <span class="mode-icon">◈</span><span class="mode-name">Position predictor</span><span class="mode-detail">Explore up to 10 lines.</span>
+                  <span class="mode-icon">◈</span><span class="mode-name">Past-draw samples</span><span class="mode-detail">Sample picks ranked from past draws.</span>
                 </button>
               </div>
 
               <div class="prediction-controls" id="prediction-controls" hidden>
                 <div class="prediction-field">
-                  <label for="outcome-count">POSSIBLE OUTCOMES</label>
+                  <label for="outcome-count">SAMPLE LINES</label>
                   <select id="outcome-count">
-                    <option value="1">1 outcome</option><option value="2">2 outcomes</option><option value="3">3 outcomes</option><option value="4">4 outcomes</option><option value="5" selected>5 outcomes</option><option value="6">6 outcomes</option><option value="7">7 outcomes</option><option value="8">8 outcomes</option><option value="9">9 outcomes</option><option value="10">10 outcomes</option>
+                    <option value="1">1 line</option><option value="2">2 lines</option><option value="3">3 lines</option><option value="4">4 lines</option><option value="5" selected>5 lines</option><option value="6">6 lines</option><option value="7">7 lines</option><option value="8">8 lines</option><option value="9">9 lines</option><option value="10">10 lines</option>
                   </select>
                 </div>
                 <div class="prediction-field">
@@ -113,7 +113,7 @@
                     <option value="closest">Closest</option><option value="balanced" selected>Balanced</option><option value="varied">More varied</option>
                   </select>
                 </div>
-                <p class="prediction-control-note"><strong id="diversity-rule">Balanced: any two lines share at most 3 numbers.</strong> <span id="diversity-note">Greater variety may include lower-ranked pattern matches. It does not improve a line’s chance of winning.</span></p>
+                <p class="prediction-control-note"><strong id="diversity-rule">Balanced: any two lines share at most 3 numbers.</strong> <span id="diversity-note">These sample lines describe past patterns; variety does not improve the odds.</span></p>
                 <p class="prediction-control-note">The archive records numbers sorted from smallest to largest, not the order the balls were drawn.</p>
               </div>
 
@@ -135,11 +135,11 @@
                 </div>
               </section>
 
-              <section class="prediction-results" id="prediction-results" aria-label="Candidate number outcomes" hidden>
+              <section class="prediction-results" id="prediction-results" aria-label="Sample number picks based on past draws" hidden>
                 <div class="prediction-summary-bar"><p class="prediction-summary" id="prediction-summary" role="status"></p><button class="copy-button" id="copy-all-outcomes" type="button">↗ COPY ALL</button></div>
                 <p class="prediction-limit-note" id="prediction-limit-note" hidden>Fewer lines are available with this Variety setting.</p>
                 <div id="prediction-alternatives">
-                  <p class="tiny-label">MORE POSSIBLE OUTCOMES</p>
+                  <p class="tiny-label">MORE SAMPLE PICKS</p>
                   <ol class="prediction-outcomes" id="prediction-outcomes" start="2"></ol>
                 </div>
               </section>
@@ -148,7 +148,7 @@
 
               <div class="picker-actions">
                 <button class="generate-button" id="generate-line" type="button"><span id="generate-label">Spin a line</span><span class="button-star">✳</span></button>
-                <p class="fairness-note"><span aria-hidden="true">✳</span> For fun only. No picker can predict the next draw.</p>
+                <p class="fairness-note"><span aria-hidden="true">✳</span> For fun only. Past results do not predict future draws or improve the odds.</p>
               </div>
               <p class="visually-hidden" id="spin-status" role="status" aria-live="polite" aria-atomic="true"></p>
             </div>
@@ -205,7 +205,7 @@
 
         <section class="view-panel" id="view-numbers" aria-labelledby="numbers-title" hidden>
           <div class="section-heading">
-            <div><p class="eyebrow">02 / THE NUMBER BOARD</p><h2 id="numbers-title">What showed up?</h2></div>
+            <div><p class="eyebrow">02 / THE NUMBER BOARD</p><h2 id="numbers-title">Number frequencies</h2></div>
             <p class="section-aside">Counts are for the selected format only.</p>
           </div>
           <div class="stats-summary">
@@ -231,7 +231,7 @@
 
         <section class="view-panel" id="view-history" aria-labelledby="history-title" hidden>
           <div class="section-heading">
-            <div><p class="eyebrow">03 / THE ARCHIVE</p><h2 id="history-title">Every draw, in order.</h2></div>
+            <div><p class="eyebrow">03 / THE ARCHIVE</p><h2 id="history-title">Malta Super5 draw history</h2></div>
             <p class="section-aside" id="archive-summary">Browse the saved Malta Super5 results.</p>
           </div>
           <div class="archive-toolbar">

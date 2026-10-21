@@ -15,14 +15,14 @@ const MODE_LABELS = {
   recent: "RECENT FAVOURITES",
   long: "LONG VIEW",
   overdue: "OVERDUE LIST",
-  predict: "POSITION PREDICTOR"
+  predict: "PAST-DRAW SAMPLES"
 };
 const MODE_CAPTIONS = {
   uniform: "A random line. Every valid line is equally likely.",
   recent: "Most common in the last 30 draws.",
   long: "Most common in this format.",
   overdue: "Longest gap in this format.",
-  predict: "Candidate line. Every valid line has the same odds."
+  predict: "Sample picks ranked from past draws. Every valid line has the same odds."
 };
 let archive = null;
 let activeView = "pick";
@@ -195,7 +195,7 @@ function showSpinPreview(numbers, mode, primary = false) {
   const preview = $("#spin-preview");
   $("#extra-lines-section").hidden = false;
   const predictor = mode === "predict";
-  const lineNumber = predictor ? "OUTCOME 01" : "LINE " + String(primary ? 1 : extraLines.length + 2).padStart(2, "0") + " / " + MAX_PICK_LINES;
+  const lineNumber = predictor ? "SAMPLE 01" : "LINE " + String(primary ? 1 : extraLines.length + 2).padStart(2, "0") + " / " + MAX_PICK_LINES;
   const modeName = mode === "uniform" ? "QUICK PICK" : MODE_LABELS[mode];
   $("#spin-preview-index").textContent = lineNumber;
   $("#spin-preview-mode").textContent = modeName + " FOR DRAW " + firstQuickPickDraw;
@@ -262,7 +262,7 @@ function renderPrimaryLine() {
   const numbers = generatedNumbers;
   $("#primary-line-result").classList.remove("draw-lucky-result");
   $("#line-title").textContent = MODE_LABELS[selectedMode];
-  $("#line-seq").textContent = predicting ? "OUTCOME 01" : "LINE 01";
+  $("#line-seq").textContent = predicting ? "SAMPLE 01" : "LINE 01";
   $("#line-caption").textContent = MODE_CAPTIONS[selectedMode];
   setBallRow($("#generated-line"), numbers || [null, null, null, null, null], false);
   $("#copy-line").disabled = !numbers;
@@ -280,8 +280,8 @@ function setSelectionRevealing(revealing) {
 function updateOrbitCaption() {
   if (selectionIsRevealing) return;
   if (selectedMode === "predict" && generatedNumbers) {
-    $("#heading-line-title").textContent = "POSITION PREDICTOR";
-    $("#heading-line-seq").textContent = "OUTCOME 01";
+    $("#heading-line-title").textContent = "PAST-DRAW SAMPLES";
+    $("#heading-line-seq").textContent = "SAMPLE 01";
     return;
   }
   const latest = extraLines.at(-1);
@@ -294,7 +294,7 @@ function updateOrbitCaption() {
     ? "DRAW " + firstQuickPickDraw + " PICK"
     : MODE_LABELS[selectedMode];
   $("#heading-line-seq").textContent = selectedMode === "predict"
-    ? "OUTCOME 01"
+    ? "SAMPLE 01"
     : selectedMode === "uniform" ? "FIRST LINE" : "LINE 01";
 }
 
@@ -366,7 +366,7 @@ function updateLine(animateLatest = false) {
   $("#prediction-controls").hidden = !predicting;
   $("#position-labels").hidden = !predicting;
   $("#prediction-results").hidden = !predicting || !generatedNumbers || !predictedLines.length;
-  $("#generate-label").textContent = predicting ? "Build outcomes" : "Spin a line";
+  $("#generate-label").textContent = predicting ? "Build sample picks" : "Spin a line";
   if (!predicting && extraLines.length >= MAX_PICK_LINES - 1) $("#generate-label").textContent = "Line limit reached";
   $("#generate-line").disabled = selectionIsRevealing || (!predicting && extraLines.length >= MAX_PICK_LINES - 1);
   updateOrbitCaption();
@@ -377,8 +377,8 @@ function presentSelection(numbers, mode, onComplete, primary = false) {
   showSpinPreview(numbers, mode, primary);
   setSelectionRevealing(true);
   $("#generate-line").classList.add("is-spinning");
-  $("#generate-label").textContent = mode === "predict" ? "Building outcomes…" : "Spinning…";
-  $("#spin-status").textContent = mode === "predict" ? "Building a candidate line." : "Spinning a new line.";
+  $("#generate-label").textContent = mode === "predict" ? "Building sample picks…" : "Spinning…";
+  $("#spin-status").textContent = mode === "predict" ? "Building a past-draw sample pick." : "Spinning a new line.";
   $("#heading-line-title").textContent = mode === "uniform" ? "QUICK PICK" : MODE_LABELS[mode];
   $("#heading-line-seq").textContent = "SPINNING";
   revealOrbitNumbers(numbers, mode, () => {
@@ -404,7 +404,7 @@ function generateSelection() {
     presentSelection(numbers, mode, () => {
       generatedNumbers = numbers.slice();
       updateLine();
-      $("#spin-status").textContent = "Position predictor outcome 1 of " + predictedLines.length + ": " + numbers.join(", ") + ".";
+      $("#spin-status").textContent = "Past-draw sample pick 1 of " + predictedLines.length + ": " + numbers.join(", ") + ".";
     });
     return;
   }
@@ -485,7 +485,7 @@ function renderPredictions() {
   $("#copy-fallback").hidden = true;
   if (selectedMode !== "predict" || !positionModel || !generatedNumbers) return;
 
-  $("#prediction-summary").textContent = predictedLines.length + (predictedLines.length === 1 ? " candidate" : " candidates") +
+  $("#prediction-summary").textContent = predictedLines.length + (predictedLines.length === 1 ? " sample line" : " sample lines") +
     " · " + DIVERSITY_SETTINGS[$("#outcome-diversity").value].label +
     " · " + eraDraws().length + " draws in the " + currentRules().format + " era";
   $("#prediction-limit-note").hidden = predictedLines.length >= Number($("#outcome-count").value);
@@ -503,7 +503,7 @@ function renderPredictions() {
     copy.className = "copy-button";
     copy.type = "button";
     copy.textContent = "↗ COPY";
-    copy.setAttribute("aria-label", "Copy outcome " + (index + 2));
+    copy.setAttribute("aria-label", "Copy sample pick " + (index + 2));
     copy.addEventListener("click", () => { void copyNumbers(copy, [numbers]); });
     row.append(label, balls, copy);
     host.append(row);

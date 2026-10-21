@@ -65,7 +65,7 @@ Render services use an ephemeral filesystem by default. The app can refresh its 
 
 Quick pick samples five different numbers uniformly. Recent favourites, Long view, and Overdue list summarize archived frequency or draw gaps.
 
-**Position predictor** offers 1–10 candidate lines (five by default). Each line contains five distinct numbers for the selected rules era. The lines are for exploration only; every valid line has the same chance of being drawn.
+**Past-draw sample picks** offer 1–10 lines (five by default), ranked from patterns in the saved draws. Each line contains five distinct numbers for the selected rules era. These lines are for exploration only; every valid line has the same chance of being drawn.
 
 Choose how much **Variety** to include:
 
@@ -73,9 +73,8 @@ Choose how much **Variety** to include:
 - **Balanced** (default): any two lines may share at most 3 numbers.
 - **More varied:** any two lines may share at most 2 numbers.
 
-The settings control how much lines may overlap. Candidates are deterministic for the same archive and settings. Changing the variety or rules era rebuilds the set; you can copy one line or the full list. These settings do not improve the odds.
+The settings control how much lines may overlap. Sample picks are deterministic for the same archive and settings. Changing the variety or rules era rebuilds the set; you can copy one line or the full list. These settings do not improve the odds.
 
-Increasing the outcome count preserves the existing prefix. The picker does not predict a future draw or improve a line’s odds.
+Increasing the sample count preserves the existing prefix. The picker does not predict a future draw or improve a line’s odds.
 
 Run `npm test` for predictor checks plus fixture-based updater and service checks. The saved HTML fixtures cover no new draw, one or multiple new draws, missing draw numbers, invalid dates and numbers, changed history, stale source pages, concurrent refresh requests, and recent checks. Schedule tests cover Wednesday/Friday selection and Malta timezone boundaries. Predictor tests also check exhaustive ranking and diversity selection on small ranges, overlap across positions, tie-breaking, valid lines, count limits, and deterministic 10-line output in both rules eras. The archive regression check times generation against a generous two-second budget per setting and era.
-

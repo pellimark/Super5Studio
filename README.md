@@ -65,7 +65,7 @@ Render services use an ephemeral filesystem by default. The app can refresh its 
 
 Quick pick samples five different numbers uniformly. Recent favourites, Long view, and Overdue list summarize archived frequency or draw gaps.
 
-**Position predictor** replaces History blend. Choose 1–10 possible outcomes (five by default). It treats each draw as five sorted positions, from lowest to highest; the archive records sorted numbers, not the order the balls were drawn. For each position, it counts what historically followed the latest value, smoothing those counts with the last 60 draws’ positional frequencies. With no earlier follow-ups, it falls back to frequency. It combines the five position scores to rank distinct, ascending lines without repeated numbers. All analysis stays within the selected rules era.
+**Position predictor** offers 1–10 candidate lines (five by default). Each line contains five distinct numbers for the selected rules era. The lines are for exploration only; every valid line has the same chance of being drawn.
 
 Choose how much **Variety** to include:
 
@@ -73,8 +73,9 @@ Choose how much **Variety** to include:
 - **Balanced** (default): any two lines may share at most 3 numbers.
 - **More varied:** any two lines may share at most 2 numbers.
 
-The highest-ranked line stays first as the anchor in every setting. Each alternative is the highest-scoring remaining line that meets the overlap limit with **every** line already selected, including when shared numbers occupy different positions. This greedy selection balances pattern fit with an explicit pairwise limit; it does not optimize the set as a whole. It searches valid combinations directly with score bounds to skip uncompetitive branches, rather than filtering a small top-ranked pool. The cap is never relaxed: if no further compatible line exists, fewer outcomes are shown with an explanation.
+The settings control how much lines may overlap. Candidates are deterministic for the same archive and settings. Changing the variety or rules era rebuilds the set; you can copy one line or the full list. These settings do not improve the odds.
 
-Open **Follow each position** to see its last five values and the anchor. Outcomes are deterministic for the same archive and settings; increasing the count preserves the existing prefix. Changing variety or rules era rebuilds the set immediately. Copy individual lines or the entire set. Greater variety may include lower-ranked pattern matches. Pattern scores and variety settings are not winning probabilities, and no picker improves a valid line’s odds.
+Increasing the outcome count preserves the existing prefix. The picker does not predict a future draw or improve a line’s odds.
 
 Run `npm test` for predictor checks plus fixture-based updater and service checks. The saved HTML fixtures cover no new draw, one or multiple new draws, missing draw numbers, invalid dates and numbers, changed history, stale source pages, concurrent refresh requests, and recent checks. Schedule tests cover Wednesday/Friday selection and Malta timezone boundaries. Predictor tests also check exhaustive ranking and diversity selection on small ranges, overlap across positions, tie-breaking, valid lines, count limits, and deterministic 10-line output in both rules eras. The archive regression check times generation against a generous two-second budget per setting and era.
+

@@ -186,9 +186,7 @@ async function copyNumbers(button, lines) {
 
 function renderPredictions() {
   const host = $("#prediction-outcomes");
-  const sequences = $("#position-sequences");
   host.replaceChildren();
-  sequences.replaceChildren();
   $("#copy-fallback").hidden = true;
   if (selectedMode !== "predict" || !positionModel || !generatedNumbers) return;
 
@@ -214,24 +212,6 @@ function renderPredictions() {
     copy.addEventListener("click", () => { void copyNumbers(copy, [numbers]); });
     row.append(label, balls, copy);
     host.append(row);
-  });
-  positionModel.forEach((position, index) => {
-    const row = document.createElement("div");
-    row.className = "position-sequence";
-    const label = document.createElement("strong");
-    label.textContent = "POSITION " + (index + 1);
-    const values = document.createElement("span");
-    values.className = "sequence-values";
-    values.textContent = position.recent.join(" · ");
-    const next = document.createElement("span");
-    next.className = "sequence-next";
-    next.textContent = "→ " + generatedNumbers[index];
-    const evidence = document.createElement("small");
-    evidence.textContent = position.transitionCount
-      ? position.transitionCount + (position.transitionCount === 1 ? " earlier follow-up" : " earlier follow-ups") + " after " + position.latest
-      : "No earlier follow-up after " + position.latest + "; using frequency";
-    row.append(label, values, next, evidence);
-    sequences.append(row);
   });
 }
 
@@ -569,3 +549,4 @@ async function start() {
 }
 
 start();
+

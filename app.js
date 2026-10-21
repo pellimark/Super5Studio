@@ -29,6 +29,7 @@ let selectedEra = "current";
 let selectedMode = "uniform";
 let generatedNumbers = null;
 let generatedCount = 0;
+let firstQuickPick = null;
 let predictedLines = [];
 let positionModel = null;
 let archiveLimit = 14;
@@ -129,6 +130,13 @@ function setBallRow(container, numbers, small = false, animate = false) {
   });
 }
 
+function recordFirstQuickPick(numbers) {
+  if (firstQuickPick) return;
+  firstQuickPick = numbers.slice();
+  setBallRow($("#first-quick-pick-balls"), firstQuickPick, true);
+  $("#first-quick-pick-card").hidden = false;
+}
+
 function updateLine() {
   const predicting = selectedMode === "predict";
   const line = $("#generated-line");
@@ -163,6 +171,7 @@ function generateSelection() {
     positionModel = null;
     generatedNumbers = pickLine(selectedMode);
   }
+  if (selectedMode === "uniform") recordFirstQuickPick(generatedNumbers);
   generatedCount += 1;
   updateLine();
 }
@@ -540,6 +549,7 @@ async function start() {
         archive.coverage.lastDraw !== archive.draws.at(-1)?.draw) throw new Error("Archive file is incomplete");
     attachEvents();
     renderArchiveData();
+    if (selectedMode === "uniform" && !firstQuickPick) generateSelection();
     renderResultsStatus(snapshot);
     watchForArchiveUpdates();
   } catch (error) {

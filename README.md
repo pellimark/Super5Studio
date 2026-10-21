@@ -58,6 +58,8 @@ The **Official Super5 play page** link opens the lottery’s play flow. The oper
 
 The app can run as a Render Node web service with `npm start` as its start command. It reads Render's `PORT` value and listens on `0.0.0.0`; no build step or third-party runtime package is required. A static host alone cannot run `/api/results` or fetch the official history page.
 
+The canonical URL and sitemap use the Render service origin `https://super5malta.onrender.com/`. If the production domain changes, update the canonical link in `index.html`, the `Sitemap` entry in `robots.txt`, and the URL in `sitemap.xml` together.
+
 Render services use an ephemeral filesystem by default. The app can refresh its archive while an instance is running, but those writes are lost after a restart or deploy unless the service has persistent storage. Render persistent disks require a paid web service; the free web-service plan has no persistent disk. The Windows task only updates local project files and does not update a hosted copy.
 ## Archive and pick styles
 

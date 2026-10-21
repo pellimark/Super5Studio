@@ -620,6 +620,10 @@ function renderNumbers() {
   const leaders = Array.from({ length: max }, (_, index) => index + 1)
     .sort((a, b) => counts[b] - counts[a] || a - b)
     .slice(0, 8);
+  const eraLabel = selectedEra === "current" ? "Current format" : "Archive format";
+  $("#recent-frequency-summary").textContent = eraLabel + " frequency leaders (draw count): " +
+    leaders.map((number) => String(number).padStart(2, "0") + " (" + counts[number] + ")").join(", ") +
+    ". Historical counts do not affect future odds.";
   const leaderHost = $("#frequency-leaders");
   leaderHost.replaceChildren();
   leaders.forEach((number) => {

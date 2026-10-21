@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#f3efe5">
     <meta name="description" content="Browse Malta Super5 results and history, compare number frequencies, and explore sample picks from past draws. No pick predicts results or improves the odds.">
     <title>Malta Super5 Results &amp; History | Frequencies &amp; Picks</title>
+    <link rel="canonical" href="https://super5malta.onrender.com/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
   </head>
@@ -156,10 +157,10 @@
             <aside class="draw-aside">
               <article class="latest-card">
                 <div class="latest-top"><span class="tiny-label">LATEST SAVED DRAW</span><span class="latest-arrow">↗</span></div>
-                <div class="latest-id"><span>DRAW</span><strong id="latest-draw-number">393</strong></div>
-                <p class="latest-date" id="latest-draw-date">Friday, 16 October 2026</p>
-                <div class="latest-balls" id="latest-draw-balls"></div>
-                <div class="latest-footer"><span id="latest-era-label">5 / 49 FORMAT</span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">OFFICIAL ARCHIVE ↗</a></div>
+                <div class="latest-id"><span>DRAW</span><strong id="latest-draw-number"><!--SSR_LATEST_DRAW--></strong></div>
+                <p class="latest-date" id="latest-draw-date"><!--SSR_LATEST_DATE--></p>
+                <div class="latest-balls" id="latest-draw-balls"><!--SSR_LATEST_BALLS--></div>
+                <div class="latest-footer"><span id="latest-era-label"><!--SSR_LATEST_ERA--></span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">OFFICIAL ARCHIVE ↗</a></div>
               </article>
               <article class="first-pick-card" id="first-quick-pick-card" aria-labelledby="first-quick-pick-title" hidden>
                 <div class="first-pick-heading"><span class="tiny-label" id="first-quick-pick-title">DRAW <span id="first-pick-draw-number">394</span> LUCKY NUMBERS</span><span class="first-pick-tag">SAVED</span></div>
@@ -188,7 +189,8 @@
           <div class="lower-grid">
             <section class="panel recent-panel">
               <div class="panel-heading"><div><p class="eyebrow">FROM THE NOTEBOOK</p><h3>Recent draws</h3></div><button class="text-link" data-view-target="history">OPEN ARCHIVE ↗</button></div>
-              <div class="recent-list" id="recent-draws"></div>
+              <div class="recent-list" id="recent-draws"><!--SSR_RECENT_DRAWS--></div>
+              <p class="recent-frequency-summary chart-footnote" id="recent-frequency-summary"><!--SSR_FREQUENCY_SUMMARY--></p>
             </section>
             <section class="reality-card">
               <div class="reality-stamp">REALITY<br>CHECK <span>✳</span></div>
@@ -200,7 +202,7 @@
             </section>
           </div>
 
-          <footer class="page-footnote"><span>THE ARCHIVE IS A RECORD, NOT A FORECAST.</span><span id="coverage-note">OFFICIAL RESULTS · 13 JUL 2022—16 OCT 2026</span></footer>
+          <footer class="page-footnote"><span>THE ARCHIVE IS A RECORD, NOT A FORECAST.</span><span id="coverage-note"><!--SSR_COVERAGE--></span></footer>
         </section>
 
         <section class="view-panel" id="view-numbers" aria-labelledby="numbers-title" hidden>
@@ -209,20 +211,20 @@
             <p class="section-aside">Counts are for the selected format only.</p>
           </div>
           <div class="stats-summary">
-            <div class="stat-tile stat-tile-accent"><span>NUMBER RANGE</span><strong id="stats-range">01—49</strong></div>
-            <div class="stat-tile"><span>DRAWS COUNTED</span><strong id="stats-draws">135</strong></div>
-            <div class="stat-tile"><span>AVERAGE PER NUMBER</span><strong id="stats-average">13.8</strong></div>
-            <div class="stat-tile"><span>EXPECTED PER NUMBER*</span><strong id="stats-expected">13.8</strong></div>
+            <div class="stat-tile stat-tile-accent"><span>NUMBER RANGE</span><strong id="stats-range"><!--SSR_STATS_RANGE--></strong></div>
+            <div class="stat-tile"><span>DRAWS COUNTED</span><strong id="stats-draws"><!--SSR_STATS_DRAWS--></strong></div>
+            <div class="stat-tile"><span>AVERAGE PER NUMBER</span><strong id="stats-average"><!--SSR_STATS_AVERAGE--></strong></div>
+            <div class="stat-tile"><span>EXPECTED PER NUMBER*</span><strong id="stats-expected"><!--SSR_STATS_EXPECTED--></strong></div>
           </div>
           <div class="numbers-layout">
             <section class="panel board-panel">
               <div class="panel-heading"><div><p class="eyebrow">EVERY BALL, ONE ERA</p><h3>Frequency board</h3></div><div class="board-legend"><i></i> more often</div></div>
-              <div class="frequency-board" id="frequency-board"></div>
+              <div class="frequency-board" id="frequency-board"><!--SSR_FREQUENCY_BOARD--></div>
               <p class="chart-footnote">Shade shows relative frequency within this era. It does not change a number’s chance in the next draw.</p>
             </section>
             <section class="panel leaders-panel">
               <div class="panel-heading"><div><p class="eyebrow">THE TOP OF THE LIST</p><h3>Most drawn</h3></div><span class="mini-label">BY COUNT</span></div>
-              <div class="leaders-list" id="frequency-leaders"></div>
+              <div class="leaders-list" id="frequency-leaders"><!--SSR_FREQUENCY_LEADERS--></div>
               <div class="caution-note"><span>✳</span><p>A number appearing often in the past is no more likely in the next draw.</p></div>
             </section>
           </div>
@@ -232,15 +234,15 @@
         <section class="view-panel" id="view-history" aria-labelledby="history-title" hidden>
           <div class="section-heading">
             <div><p class="eyebrow">03 / THE ARCHIVE</p><h2 id="history-title">Malta Super5 draw history</h2></div>
-            <p class="section-aside" id="archive-summary">Browse the saved Malta Super5 results.</p>
+            <p class="section-aside" id="archive-summary"><!--SSR_ARCHIVE_SUMMARY--></p>
           </div>
           <div class="archive-toolbar">
             <label class="search-box"><span aria-hidden="true">⌕</span><input id="archive-search" type="search" placeholder="Find a draw number or date" autocomplete="off"><kbd>/</kbd></label>
-            <span class="archive-count" id="archive-count">Loading draws…</span>
+            <span class="archive-count" id="archive-count"><!--SSR_ARCHIVE_COUNT--></span>
           </div>
-          <div class="archive-list" id="archive-list"></div>
+          <div class="archive-list" id="archive-list"><!--SSR_ARCHIVE_ROWS--></div>
           <button class="load-more-button" id="load-more" type="button">LOAD MORE DRAWS <span>↓</span></button>
-          <footer class="page-footnote"><span id="history-snapshot-label">ARCHIVE UPDATED.</span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">CHECK THE OFFICIAL ARCHIVE ↗</a></footer>
+          <footer class="page-footnote"><span id="history-snapshot-label"><!--SSR_SNAPSHOT_DATE--></span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">CHECK THE OFFICIAL ARCHIVE ↗</a></footer>
         </section>
       </main>
     </div>

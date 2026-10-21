@@ -185,7 +185,7 @@ export async function fetchOfficialResults() {
   }
 }
 
-export function parseStats247History(html) {
+export function parseStats247History(html, fromDate = null) {
   const pageText = visibleTextFromHtml(html);
   const headingIndex = pageText.search(/\bSuper 5 Lottery Results\b/i);
   if (headingIndex < 0) {
@@ -215,6 +215,7 @@ export function parseStats247History(html) {
       fail(`Stats247 has an invalid draw date (${dateMatch[0]}). No archive changes were made.`);
     }
     const date = `${year.toString().padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    if (fromDate && date < fromDate) continue;
     const resultsCell = cells[dateCellIndex + 1]?.[1] || "";
     const resultItems = [...resultsCell.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li\s*>/gi)];
     const resultTexts = resultItems.length > 0
@@ -266,8 +267,8 @@ export async function fetchStats247Results(archive) {
       fail(`Stats247 returned an unexpected content type: ${contentType || "unknown"}.`);
     }
 
-    const rows = parseStats247History(await response.text());
     const latest = archive.draws.at(-1);
+    const rows = parseStats247History(await response.text(), latest.date);
     const latestIndex = rows.findIndex((draw) => draw.date === latest.date);
     if (latestIndex < 0) {
       fail(`Stats247 does not show the saved latest draw date ${latest.date}; it may be stale or incomplete. No archive changes were made.`);

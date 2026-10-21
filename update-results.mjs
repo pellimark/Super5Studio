@@ -202,9 +202,11 @@ export function parseStats247History(html) {
   const rows = [...sectionHtml.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr\s*>/gi)];
   const parsed = [];
   for (const row of rows) {
-    const text = visibleTextFromHtml(row[1]);
-    const dateMatch = text.match(/\b(\d{2})-(\d{2})-(\d{4})\b/);
-    if (!dateMatch) continue;
+    const cells = [...row[1].matchAll(/<td\b[^>]*>([\s\S]*?)<\/td\s*>/gi)]
+      .map((cell) => visibleTextFromHtml(cell[1]));
+    const dateCellIndex = cells.findIndex((cell) => /\b\d{2}-\d{2}-\d{4}\b/.test(cell));
+    if (dateCellIndex < 0) continue;
+    const dateMatch = cells[dateCellIndex].match(/\b(\d{2})-(\d{2})-(\d{4})\b/);
 
     const day = Number(dateMatch[1]);
     const month = Number(dateMatch[2]);
@@ -214,8 +216,8 @@ export function parseStats247History(html) {
       fail(`Stats247 has an invalid draw date (${dateMatch[0]}). No archive changes were made.`);
     }
     const date = `${year.toString().padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const numbers = [...text.slice(dateMatch.index + dateMatch[0].length).matchAll(/\b\d{1,2}\b/g)]
-      .map((match) => Number(match[0]));
+    const resultsCell = cells[dateCellIndex + 1] || "";
+    const numbers = [...resultsCell.matchAll(/\b\d{1,2}\b/g)].map((match) => Number(match[0]));
     if (numbers.length !== 5) {
       fail(`Stats247's row for ${date} did not contain exactly five result numbers. No archive changes were made.`);
     }

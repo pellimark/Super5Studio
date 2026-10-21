@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3efe5">
+    <meta name="description" content="A playful Super5 number picker and draw history explorer using archived Malta results.">
+    <title>Super5 Studio — Malta draw room</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-rail">
+        <a class="brand" href="#top" aria-label="Super5 Studio home">
+          <span class="brand-mark" aria-hidden="true"><span>5</span><i></i></span>
+          <span class="brand-name">SUPER5 <small>STUDIO</small></span>
+        </a>
+
+        <div class="rail-caption">MALTA · DRAW ROOM</div>
+        <nav class="primary-nav" aria-label="Main navigation">
+          <button class="nav-link is-active" data-view-target="pick" aria-current="page">
+            <span class="nav-index">01</span><span>Pick a line</span><span class="nav-arrow">↗</span>
+          </button>
+          <button class="nav-link" data-view-target="numbers">
+            <span class="nav-index">02</span><span>Number board</span><span class="nav-arrow">↗</span>
+          </button>
+          <button class="nav-link" data-view-target="history">
+            <span class="nav-index">03</span><span>Draw archive</span><span class="nav-arrow">↗</span>
+          </button>
+        </nav>
+
+        <div class="rail-rule"></div>
+        <div class="rail-note">
+          <span class="tiny-label">A QUICK NOTE</span>
+          <p>Past draws make a good story. They don’t tell us what comes next.</p>
+          <span class="note-spark" aria-hidden="true">✳</span>
+        </div>
+
+        <div class="rail-footer">
+          <span class="status-dot"></span>
+          <div><strong id="rail-draw-count">393 draws</strong><small>local archive snapshot</small></div>
+        </div>
+      </aside>
+
+      <main class="workspace" id="top">
+        <div class="topline">
+          <div class="breadcrumb"><span>SUPER5</span><b>/</b><span>NUMBER ROOM</span></div>
+          <div class="snapshot-tag"><span class="status-dot"></span><span id="snapshot-label">LOCAL ARCHIVE</span></div>
+        </div>
+
+        <header class="page-heading">
+          <div class="heading-copy">
+            <p class="eyebrow"><span class="eyebrow-line"></span> A LITTLE HISTORY, A LITTLE LUCK</p>
+            <h1>Numbers in<br><em>motion.</em></h1>
+            <p class="heading-intro">Explore Malta’s Super5 draws, try a few number-picking styles, and see what the archive can—and can’t—tell us.</p>
+          </div>
+          <div class="heading-art" aria-label="Five number balls orbiting a small star">
+            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+            <span class="orbit-ball orbit-ball-a">9</span><span class="orbit-ball orbit-ball-b">25</span>
+            <span class="orbit-ball orbit-ball-c">41</span><span class="orbit-ball orbit-ball-d">6</span>
+            <span class="orbit-star">✳</span>
+            <div class="art-caption"><b id="heading-last-draw">DRAW 393</b><span>THE LATEST IN THIS FILE</span></div>
+          </div>
+        </header>
+
+        <section class="rule-bar" aria-label="Choose the Super5 rules">
+          <div class="rule-label"><span class="tiny-label">PLAYING ERA</span><span id="rule-description">Five numbers from 1 to 49</span></div>
+          <div class="era-switch" role="group" aria-label="Super5 format">
+            <button class="era-button is-selected" data-era="current" aria-pressed="true">5 / 49 <small>CURRENT</small></button>
+            <button class="era-button" data-era="classic" aria-pressed="false">5 / 45 <small>ARCHIVE</small></button>
+          </div>
+        </section>
+
+        <section class="view-panel is-visible" id="view-pick" aria-labelledby="pick-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">01 / THE PICKER</p><h2 id="pick-title">Make a line</h2></div>
+            <p class="section-aside">Pick a style, then let the balls roll.</p>
+          </div>
+
+          <div class="pick-layout">
+            <div class="picker-card">
+              <div class="picker-topline"><span class="live-dot"></span><span>YOUR NUMBER DESK</span><span class="picker-edition" id="picker-edition">5 FROM 49</span></div>
+              <div class="mode-grid" role="group" aria-label="Number picking style">
+                <button class="mode-option is-selected" data-mode="uniform" aria-pressed="true">
+                  <span class="mode-icon mode-icon-flash">↯</span><span class="mode-name">Quick pick</span><span class="mode-detail">Every valid line is equally likely.</span>
+                </button>
+                <button class="mode-option" data-mode="recent" aria-pressed="false">
+                  <span class="mode-icon">◷</span><span class="mode-name">Recent favourites</span><span class="mode-detail">Most frequent in the last 30 draws.</span>
+                </button>
+                <button class="mode-option" data-mode="long" aria-pressed="false">
+                  <span class="mode-icon">⌁</span><span class="mode-name">Long view</span><span class="mode-detail">Most frequent in this rules era.</span>
+                </button>
+                <button class="mode-option" data-mode="overdue" aria-pressed="false">
+                  <span class="mode-icon">◌</span><span class="mode-name">Overdue list</span><span class="mode-detail">Longest gap since last appearance.</span>
+                </button>
+                <button class="mode-option" data-mode="predict" aria-pressed="false">
+                  <span class="mode-icon">◈</span><span class="mode-name">Position predictor</span><span class="mode-detail">Follow five patterns. Try up to 10 lines.</span>
+                </button>
+              </div>
+
+              <div class="prediction-controls" id="prediction-controls" hidden>
+                <div class="prediction-field">
+                  <label for="outcome-count">POSSIBLE OUTCOMES</label>
+                  <select id="outcome-count">
+                    <option value="1">1 outcome</option><option value="2">2 outcomes</option><option value="3">3 outcomes</option><option value="4">4 outcomes</option><option value="5" selected>5 outcomes</option><option value="6">6 outcomes</option><option value="7">7 outcomes</option><option value="8">8 outcomes</option><option value="9">9 outcomes</option><option value="10">10 outcomes</option>
+                  </select>
+                </div>
+                <div class="prediction-field">
+                  <label for="outcome-diversity">VARIETY</label>
+                  <select id="outcome-diversity" aria-describedby="diversity-rule diversity-note">
+                    <option value="closest">Closest</option><option value="balanced" selected>Balanced</option><option value="varied">More varied</option>
+                  </select>
+                </div>
+                <p class="prediction-control-note"><strong id="diversity-rule">Balanced: any two lines share at most 3 numbers.</strong> <span id="diversity-note">Greater variety may include lower-ranked pattern matches. It does not improve a line’s chance of winning.</span></p>
+                <p class="prediction-control-note">The archive records numbers sorted from smallest to largest, not the order the balls were drawn.</p>
+              </div>
+
+              <div class="line-result" aria-live="polite">
+                <div class="line-label"><span id="line-title">YOUR QUICK PICK</span><span class="line-seq" id="line-seq">LINE 01</span></div>
+                <div class="number-line" id="generated-line">
+                  <span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span>
+                </div>
+                <div class="position-labels" id="position-labels" hidden><span>LOWEST</span><span>2ND</span><span>3RD</span><span>4TH</span><span>HIGHEST</span></div>
+                <div class="line-foot"><span id="line-caption">A fresh, uniformly random line.</span><button class="copy-button" id="copy-line" type="button" disabled>↗ COPY</button></div>
+              </div>
+
+              <section class="prediction-results" id="prediction-results" aria-label="Position pattern outcomes" hidden>
+                <div class="prediction-summary-bar"><p class="prediction-summary" id="prediction-summary" role="status"></p><button class="copy-button" id="copy-all-outcomes" type="button">↗ COPY ALL</button></div>
+                <p class="prediction-limit-note" id="prediction-limit-note" hidden>Fewer outcomes are shown because no further line fits the shared-number limit with every selected line. The limit is never relaxed.</p>
+                <div id="prediction-alternatives">
+                  <p class="tiny-label">MORE POSSIBLE OUTCOMES</p>
+                  <ol class="prediction-outcomes" id="prediction-outcomes" start="2"></ol>
+                </div>
+                <details class="prediction-method">
+                  <summary>Follow each position <span aria-hidden="true">↗</span></summary>
+                  <p id="prediction-order-note">For each sorted position, we look at what followed its latest value in earlier draws of this era. We smooth those patterns with frequencies from the last 60 draws, then score distinct, valid lines. With no earlier follow-ups, we use frequency alone.</p>
+                  <p>We keep the highest-ranked line as the anchor. Each alternative is the highest-scoring remaining line that respects the shared-number limit with every line already selected: 4 for Closest, 3 for Balanced, or 2 for More varied. We may show fewer outcomes if no further line fits.</p>
+                  <p class="sequence-heading">LAST 5 VALUES → FIRST CANDIDATE</p>
+                  <div id="position-sequences"></div>
+                  <p>The same archive and settings give the same outcomes. These are pattern rankings, not winning probabilities.</p>
+                </details>
+              </section>
+
+              <div class="copy-fallback" id="copy-fallback" hidden><label for="copy-fallback-text">Copy these numbers:</label><textarea id="copy-fallback-text" readonly rows="3"></textarea></div>
+
+              <div class="picker-actions">
+                <button class="generate-button" id="generate-line" type="button"><span id="generate-label">Spin a line</span><span class="button-star">✳</span></button>
+                <p class="fairness-note"><span aria-hidden="true">✳</span> For fun only. No picker can predict the next draw.</p>
+              </div>
+            </div>
+
+            <aside class="draw-aside">
+              <article class="latest-card">
+                <div class="latest-top"><span class="tiny-label">LATEST VERIFIED DRAW</span><span class="latest-arrow">↗</span></div>
+                <div class="latest-id"><span>DRAW</span><strong id="latest-draw-number">393</strong></div>
+                <p class="latest-date" id="latest-draw-date">Friday, 16 October 2026</p>
+                <div class="latest-balls" id="latest-draw-balls"></div>
+                <div class="latest-footer"><span id="latest-era-label">5 / 49 FORMAT</span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">OFFICIAL ARCHIVE ↗</a></div>
+              </article>
+              <article class="schedule-card" aria-labelledby="scheduled-title">
+                <div class="schedule-top"><span class="tiny-label">UP NEXT · SCHEDULED</span><span class="schedule-mark" aria-hidden="true">↗</span></div>
+                <h3 id="scheduled-title" class="visually-hidden">Next scheduled draw</h3>
+                <div class="scheduled-id"><span>DRAW</span><strong id="scheduled-draw-number">394</strong></div>
+                <time class="scheduled-date" id="scheduled-draw-date" datetime="2026-10-21">Wednesday, 21 October 2026</time>
+                <p class="schedule-caveat">Regular Wednesday and Friday schedule, Malta time. Draw dates can change or have exceptions.</p>
+                <div class="source-check" aria-live="polite">
+                  <div class="source-check-heading"><span>LAST SOURCE CHECK</span><time id="source-check-time">Checking now…</time></div>
+                  <p id="refresh-state">Checking the official results history…</p>
+                </div>
+                <a class="play-page-link" href="https://lottery.mt/super5" target="_blank" rel="noreferrer">OFFICIAL SUPER5 PLAY PAGE <span aria-hidden="true">↗</span></a>
+                <p class="play-page-note">Open the lottery site to choose numbers. This link does not transfer your picks.</p>
+              </article>
+              <div class="era-count-card">
+                <span class="count-mark">∑</span><div><strong id="era-draw-count">135</strong><span>DRAWS IN THIS ERA</span></div>
+              </div>
+            </aside>
+          </div>
+
+          <div class="lower-grid">
+            <section class="panel recent-panel">
+              <div class="panel-heading"><div><p class="eyebrow">FROM THE NOTEBOOK</p><h3>Recent draws</h3></div><button class="text-link" data-view-target="history">OPEN ARCHIVE ↗</button></div>
+              <div class="recent-list" id="recent-draws"></div>
+            </section>
+            <section class="reality-card">
+              <div class="reality-stamp">REALITY<br>CHECK <span>✳</span></div>
+              <p class="eyebrow">A SMALL BACKTEST</p>
+              <h3>Patterns make<br>interesting lists.</h3>
+              <div class="reality-metric"><strong id="backtest-observed">65</strong><span>matches from 105<br>long-view picks</span></div>
+              <div class="baseline"><span>RANDOM LINE EXPECTATION</span><b id="backtest-baseline">≈ 53.6</b></div>
+              <p class="reality-copy" id="backtest-copy">That difference is still well within ordinary draw-to-draw noise. The archive offers no reliable edge.</p>
+            </section>
+          </div>
+
+          <footer class="page-footnote"><span>THE ARCHIVE IS A RECORD, NOT A FORECAST.</span><span id="coverage-note">OFFICIAL RESULTS · 13 JUL 2022—16 OCT 2026</span></footer>
+        </section>
+
+        <section class="view-panel" id="view-numbers" aria-labelledby="numbers-title" hidden>
+          <div class="section-heading">
+            <div><p class="eyebrow">02 / THE NUMBER BOARD</p><h2 id="numbers-title">What showed up?</h2></div>
+            <p class="section-aside">Counts are for the selected format only.</p>
+          </div>
+          <div class="stats-summary">
+            <div class="stat-tile stat-tile-accent"><span>NUMBER RANGE</span><strong id="stats-range">01—49</strong></div>
+            <div class="stat-tile"><span>DRAWS COUNTED</span><strong id="stats-draws">135</strong></div>
+            <div class="stat-tile"><span>AVERAGE PER NUMBER</span><strong id="stats-average">13.8</strong></div>
+            <div class="stat-tile"><span>EXPECTED PER NUMBER*</span><strong id="stats-expected">13.8</strong></div>
+          </div>
+          <div class="numbers-layout">
+            <section class="panel board-panel">
+              <div class="panel-heading"><div><p class="eyebrow">EVERY BALL, ONE ERA</p><h3>Frequency board</h3></div><div class="board-legend"><i></i> more often</div></div>
+              <div class="frequency-board" id="frequency-board"></div>
+              <p class="chart-footnote">Shade shows relative frequency within this era. It does not change a number’s chance in the next draw.</p>
+            </section>
+            <section class="panel leaders-panel">
+              <div class="panel-heading"><div><p class="eyebrow">THE TOP OF THE LIST</p><h3>Most drawn</h3></div><span class="mini-label">BY COUNT</span></div>
+              <div class="leaders-list" id="frequency-leaders"></div>
+              <div class="caution-note"><span>✳</span><p>A number appearing often in the past is no more likely in the next draw.</p></div>
+            </section>
+          </div>
+          <footer class="page-footnote"><span>* EXPECTED COUNT IS 5 × DRAWS ÷ NUMBER RANGE.</span><span>DESCRIPTIVE STATISTICS ONLY</span></footer>
+        </section>
+
+        <section class="view-panel" id="view-history" aria-labelledby="history-title" hidden>
+          <div class="section-heading">
+            <div><p class="eyebrow">03 / THE ARCHIVE</p><h2 id="history-title">Every draw, in order.</h2></div>
+            <p class="section-aside" id="archive-summary">A local copy of the official archive.</p>
+          </div>
+          <div class="archive-toolbar">
+            <label class="search-box"><span aria-hidden="true">⌕</span><input id="archive-search" type="search" placeholder="Find a draw number or date" autocomplete="off"><kbd>/</kbd></label>
+            <span class="archive-count" id="archive-count">Loading draws…</span>
+          </div>
+          <div class="archive-list" id="archive-list"></div>
+          <button class="load-more-button" id="load-more" type="button">LOAD MORE DRAWS <span>↓</span></button>
+          <footer class="page-footnote"><span id="history-snapshot-label">LOCAL ARCHIVE.</span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">CHECK THE OFFICIAL ARCHIVE ↗</a></footer>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

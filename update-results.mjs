@@ -224,7 +224,7 @@ export function parseStats247History(html, fromDate = null) {
     const numberGroups = resultTexts.map((resultText) => [...resultText.matchAll(/\b\d{1,2}\b/g)]);
     const numbers = numberGroups.flat().map((match) => Number(match[0]));
     if (numbers.length !== 5 || (resultItems.length > 0 && numberGroups.some((group) => group.length !== 1))) {
-      fail(`Stats247's row for ${date} did not contain exactly five result numbers. No archive changes were made.`);
+      fail(`Stats247's row for ${date} did not contain exactly five result numbers (found ${numbers.join(", ") || "none"}). No archive changes were made.`);
     }
     parsed.push({ date, numbers });
   }

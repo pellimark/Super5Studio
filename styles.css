@@ -79,9 +79,9 @@ h1 em { color: #39776c; font-weight: 500; }
 .orbit { position: absolute; top: 18px; left: 71px; width: 104px; height: 104px; border: 1px solid #799387; border-radius: 50%; transform: rotate(-28deg) scaleX(1.45); }
 .orbit-two { transform: rotate(50deg) scaleX(1.43); border-color: #b7a984; }
 .orbit-ball { position: absolute; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #fffdf7; border-radius: 50%; box-shadow: 0 4px 10px #2137352c; color: var(--navy); background: var(--teal); font: bold 12px var(--body); }
-.orbit-ball-a { top: 17px; left: 123px; }.orbit-ball-b { top: 55px; left: 47px; background: var(--coral); color: #fffdf7; }.orbit-ball-c { top: 94px; left: 162px; background: var(--yellow); }.orbit-ball-d { top: 105px; left: 78px; background: #fffdf7; }
+.orbit-ball-a { top: 17px; left: 123px; }.orbit-ball-b { top: 55px; left: 47px; background: var(--coral); color: #fffdf7; }.orbit-ball-c { top: 64px; left: 162px; background: var(--yellow); }.orbit-ball-d { top: 80px; left: 78px; background: #fffdf7; }
 .orbit-star { position: absolute; top: 52px; left: 116px; color: var(--navy); font-size: 23px; }
-.art-caption { position: absolute; right: 12px; bottom: 9px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; color: #668078; font-size: 9px; letter-spacing: .1em; }
+.art-caption { position: absolute; right: 50px; bottom: 16px; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; color: #668078; font-size: 9px; letter-spacing: .1em; }
 .art-caption b { color: var(--navy); font-size: 10px; }
 
 .rule-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 0; border-bottom: 1px solid var(--line); }
@@ -293,7 +293,9 @@ h3 { margin: 0; font: 500 21px/1 var(--display); letter-spacing: -.025em; }
   .page-heading { padding: 27px 0 18px; }
   .heading-art { flex-basis: 175px; height: 130px; }
   .orbit { top: 7px; left: 53px; }
-  .orbit-ball-a { left: 106px; }.orbit-ball-b { left: 29px; }.orbit-ball-c { top: 82px; left: 139px; }.orbit-ball-d { top: 89px; left: 62px; }.orbit-star { top: 42px; left: 98px; }
+  .orbit-ball-a { left: 106px; }.orbit-ball-b { left: 29px; }.orbit-ball-c { top: 50px; left: 139px; }.orbit-ball-d { top: 62px; left: 62px; }.orbit-star { top: 42px; left: 98px; }
+  .art-caption { right: 40px; bottom: 14px; }
+  .art-caption span { display: none; }
   .pick-layout { grid-template-columns: minmax(0,1.4fr) minmax(200px,.8fr); }
   .lower-grid { grid-template-columns: minmax(0,1fr) minmax(230px,.8fr); }
 }

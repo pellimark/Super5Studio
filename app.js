@@ -16,11 +16,11 @@ const MODE_LABELS = {
   predict: "POSITION PREDICTOR"
 };
 const MODE_CAPTIONS = {
-  uniform: "A fresh, uniformly random line.",
-  recent: "A frequency snapshot from the last 30 draws.",
-  long: "A frequency snapshot from this rules era.",
-  overdue: "Numbers with the longest gap in this era.",
-  predict: "Highest-ranked pattern match (anchor). Every valid line has the same draw odds."
+  uniform: "A random line. Every valid line is equally likely.",
+  recent: "Most common in the last 30 draws.",
+  long: "Most common in this format.",
+  overdue: "Longest gap in this format.",
+  predict: "Candidate line. Every valid line has the same odds."
 };
 
 let archive = null;
@@ -472,8 +472,8 @@ function attachEvents() {
 function renderArchiveData() {
   $("#rail-draw-count").textContent = archive.coverage.drawCount + " draws";
   const retrieved = prettyDate(archive.retrievedAt, { short: true }).toUpperCase();
-  $("#snapshot-label").textContent = "SNAPSHOT · " + retrieved;
-  $("#history-snapshot-label").textContent = "SNAPSHOT SAVED " + retrieved + ".";
+  $("#snapshot-label").textContent = "ARCHIVE UPDATED · " + retrieved;
+  $("#history-snapshot-label").textContent = "ARCHIVE UPDATED " + retrieved + ".";
   $("#coverage-note").textContent = "OFFICIAL RESULTS · " + prettyDate(archive.coverage.firstDate, { short: true }).toUpperCase() + "—" + prettyDate(archive.coverage.lastDate, { short: true }).toUpperCase();
   renderLatest();
   renderRecent();

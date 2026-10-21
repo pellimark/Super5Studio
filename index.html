@@ -245,9 +245,27 @@
           <button class="load-more-button" id="load-more" type="button">LOAD MORE DRAWS <span>↓</span></button>
           <footer class="page-footnote"><span id="history-snapshot-label"><!--SSR_SNAPSHOT_DATE--></span><a href="https://lottery.mt/super5/results/history" target="_blank" rel="noreferrer">CHECK THE OFFICIAL ARCHIVE ↗</a></footer>
         </section>
+
+        <footer class="site-legal-footer" aria-label="Privacy choices">
+          <a href="/privacy.html">Privacy &amp; cookies</a>
+          <button type="button" data-open-analytics-preferences>Cookie preferences</button>
+        </footer>
       </main>
     </div>
 
+    <section class="consent-banner" data-analytics-consent role="dialog" aria-labelledby="consent-title" aria-describedby="consent-description" hidden>
+      <div class="consent-copy">
+        <p class="eyebrow">YOUR PRIVACY</p>
+        <h2 id="consent-title">Choose analytics cookies</h2>
+        <p id="consent-description">We use Google Analytics to count visits and page views. It only starts if you allow it. You can change your choice at any time. <a href="/privacy.html">Read the privacy notice</a>.</p>
+      </div>
+      <div class="consent-actions">
+        <button type="button" class="consent-accept" data-analytics-consent-choice="granted">Allow analytics</button>
+        <button type="button" class="consent-reject" data-analytics-consent-choice="denied">Reject analytics</button>
+      </div>
+    </section>
+
     <script type="module" src="app.js"></script>
+    <script src="analytics-consent.js" defer></script>
   </body>
 </html>

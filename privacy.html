@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Privacy and analytics cookie information for the Super5 Malta results and history site.">
+    <meta name="theme-color" content="#f3efe5">
+    <title>Privacy &amp; Cookies | Super5 Malta</title>
+    <link rel="canonical" href="https://super5malta.onrender.com/privacy.html">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="privacy-page">
+    <header class="privacy-header">
+      <a class="privacy-brand" href="/">SUPER5 <span>MALTA</span></a>
+      <a class="privacy-back" href="/">Back to the results site <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="privacy-main">
+      <p class="eyebrow">SITE INFORMATION</p>
+      <h1>Privacy &amp; cookies</h1>
+      <p class="privacy-lede">This notice explains how Super5 Malta uses optional analytics on this site.</p>
+
+      <article class="privacy-card">
+        <section>
+          <h2>Google Analytics</h2>
+          <p>This site uses Google Analytics 4 (GA4), a service provided by Google, to understand visits and page views. The GA4 tag is not loaded unless you choose <strong>Allow analytics</strong>. If you reject analytics, no GA4 measurement tag is loaded.</p>
+          <p>When allowed, GA4 may process page and session events, the page address and title, browser and device details, approximate location, referring page, and identifiers stored in analytics cookies. Enhanced measurement for scrolls, outbound clicks, and form interactions is disabled. The site does not intentionally send names, email addresses, or lottery picks to GA4.</p>
+          <p>Google processes this information to provide analytics reports. See <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noreferrer">how Google uses information from sites or apps that use its services</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Google's Privacy Policy</a>.</p>
+        </section>
+
+        <section>
+          <h2>Your choice</h2>
+          <p>Your analytics choice is saved in this browser. You can change it at any time. Rejecting analytics does not affect the site's results, archive, or number tools.</p>
+          <button type="button" class="consent-preferences-button" data-open-analytics-preferences>Change cookie preferences</button>
+        </section>
+
+        <section>
+          <h2>Essential storage</h2>
+          <p>This site stores your analytics choice locally so it can remember whether you allowed or rejected analytics. This preference is used only to apply your choice.</p>
+        </section>
+
+        <p class="privacy-updated">Last updated: 21 October 2026</p>
+      </article>
+    </main>
+
+    <section class="consent-banner" data-analytics-consent role="dialog" aria-labelledby="consent-title" aria-describedby="consent-description" hidden>
+      <div class="consent-copy">
+        <p class="eyebrow">YOUR PRIVACY</p>
+        <h2 id="consent-title">Choose analytics cookies</h2>
+        <p id="consent-description">We use Google Analytics to count visits and page views. It only starts if you allow it. You can change your choice at any time. <a href="/privacy.html">Read the privacy notice</a>.</p>
+      </div>
+      <div class="consent-actions">
+        <button type="button" class="consent-accept" data-analytics-consent-choice="granted">Allow analytics</button>
+        <button type="button" class="consent-reject" data-analytics-consent-choice="denied">Reject analytics</button>
+      </div>
+    </section>
+
+    <script src="analytics-consent.js" defer></script>
+  </body>
+</html>

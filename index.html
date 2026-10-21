@@ -95,7 +95,7 @@
                   <span class="mode-icon">◌</span><span class="mode-name">Overdue list</span><span class="mode-detail">Longest gap since last appearance.</span>
                 </button>
                 <button class="mode-option" data-mode="predict" aria-pressed="false">
-                  <span class="mode-icon">◈</span><span class="mode-name">Position predictor</span><span class="mode-detail">Follow five patterns. Try up to 10 lines.</span>
+                  <span class="mode-icon">◈</span><span class="mode-name">Position predictor</span><span class="mode-detail">Explore up to 10 lines.</span>
                 </button>
               </div>
 
@@ -125,21 +125,13 @@
                 <div class="line-foot"><span id="line-caption">A fresh, uniformly random line.</span><button class="copy-button" id="copy-line" type="button" disabled>↗ COPY</button></div>
               </div>
 
-              <section class="prediction-results" id="prediction-results" aria-label="Position pattern outcomes" hidden>
+              <section class="prediction-results" id="prediction-results" aria-label="Candidate number outcomes" hidden>
                 <div class="prediction-summary-bar"><p class="prediction-summary" id="prediction-summary" role="status"></p><button class="copy-button" id="copy-all-outcomes" type="button">↗ COPY ALL</button></div>
-                <p class="prediction-limit-note" id="prediction-limit-note" hidden>Fewer outcomes are shown because no further line fits the shared-number limit with every selected line. The limit is never relaxed.</p>
+                <p class="prediction-limit-note" id="prediction-limit-note" hidden>Fewer lines are available with this Variety setting.</p>
                 <div id="prediction-alternatives">
                   <p class="tiny-label">MORE POSSIBLE OUTCOMES</p>
                   <ol class="prediction-outcomes" id="prediction-outcomes" start="2"></ol>
                 </div>
-                <details class="prediction-method">
-                  <summary>Follow each position <span aria-hidden="true">↗</span></summary>
-                  <p id="prediction-order-note">For each sorted position, we look at what followed its latest value in earlier draws of this era. We smooth those patterns with frequencies from the last 60 draws, then score distinct, valid lines. With no earlier follow-ups, we use frequency alone.</p>
-                  <p>We keep the highest-ranked line as the anchor. Each alternative is the highest-scoring remaining line that respects the shared-number limit with every line already selected: 4 for Closest, 3 for Balanced, or 2 for More varied. We may show fewer outcomes if no further line fits.</p>
-                  <p class="sequence-heading">LAST 5 VALUES → FIRST CANDIDATE</p>
-                  <div id="position-sequences"></div>
-                  <p>The same archive and settings give the same outcomes. These are pattern rankings, not winning probabilities.</p>
-                </details>
               </section>
 
               <div class="copy-fallback" id="copy-fallback" hidden><label for="copy-fallback-text">Copy these numbers:</label><textarea id="copy-fallback-text" readonly rows="3"></textarea></div>
@@ -240,3 +232,4 @@
     <script type="module" src="app.js"></script>
   </body>
 </html>
+

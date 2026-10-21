@@ -200,7 +200,12 @@ export function parseStats247History(html, fromDate = null) {
   }
 
   const sectionHtml = html.slice(resultsStart, resultsEnd);
-  const rows = [...sectionHtml.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr\s*>/gi)];
+  const resultsTable = [...sectionHtml.matchAll(/<table\b[^>]*>[\s\S]*?<\/table\s*>/gi)]
+    .find((table) => /\bid\s*=\s*["']table-statistics["']/i.test(table[0].slice(0, table[0].indexOf(">"))));
+  if (!resultsTable) {
+    fail("Stats247 did not show its expected results table. No archive changes were made.");
+  }
+  const rows = [...resultsTable[0].matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr\s*>/gi)];
   const parsed = [];
   for (const row of rows) {
     const text = visibleTextFromHtml(row[1]);

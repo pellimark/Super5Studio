@@ -4,6 +4,7 @@ import { buildPositionModel, DIVERSITY_SETTINGS, predictOutcomes } from "./posit
 import { nextScheduledDraw } from "./next-draw.js";
 
 const RESULTS_PATH = "/api/results";
+const QUICK_PICKS_STORAGE_KEY = "super5.quickPicksByDraw.v1";
 const ERA_RULES = {
   current: { max: 49, firstDraw: 259, format: "5 / 49", label: "CURRENT FORMAT" },
   classic: { max: 45, firstDraw: 1, lastDraw: 258, format: "5 / 45", label: "ARCHIVE FORMAT" }
@@ -30,6 +31,8 @@ let selectedMode = "uniform";
 let generatedNumbers = null;
 let generatedCount = 0;
 let firstQuickPick = null;
+let firstQuickPickDraw = null;
+let quickPicksByDraw = {};
 let orbitRevealVersion = 0;
 let orbitRevealTimer = null;
 let predictedLines = [];
@@ -132,12 +135,47 @@ function setBallRow(container, numbers, small = false, animate = false) {
   });
 }
 
-function rememberFirstQuickPick(numbers) {
-  if (!firstQuickPick) firstQuickPick = numbers.slice();
+function validQuickPickRecord(record, drawNumber) {
+  const max = drawNumber < ERA_RULES.classic.lastDraw + 1 ? 45 : 49;
+  return record && record.drawNumber === drawNumber && Array.isArray(record.numbers) &&
+    record.numbers.length === 5 && new Set(record.numbers).size === 5 &&
+    record.numbers.every((number) => Number.isInteger(number) && number >= 1 && number <= max);
+}
+
+function loadQuickPicks() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(QUICK_PICKS_STORAGE_KEY) || "{}");
+    if (saved && typeof saved === "object" && !Array.isArray(saved)) quickPicksByDraw = saved;
+  } catch {
+    quickPicksByDraw = {};
+  }
+}
+
+function saveQuickPicks() {
+  try {
+    window.localStorage.setItem(QUICK_PICKS_STORAGE_KEY, JSON.stringify(quickPicksByDraw));
+  } catch {
+    // Keep the current pick usable when browser storage is unavailable.
+  }
+}
+
+function setFirstQuickPickForDraw(drawNumber) {
+  const key = String(drawNumber);
+  let record = quickPicksByDraw[key];
+  if (!validQuickPickRecord(record, drawNumber)) {
+    record = { drawNumber, numbers: pickLine("uniform") };
+    quickPicksByDraw[key] = record;
+    saveQuickPicks();
+  }
+  firstQuickPickDraw = drawNumber;
+  firstQuickPick = record.numbers.slice();
+  renderFirstQuickPick();
+  return firstQuickPick.slice();
 }
 
 function renderFirstQuickPick() {
   if (!firstQuickPick) return;
+  $("#first-pick-draw-number").textContent = String(firstQuickPickDraw);
   setBallRow($("#first-quick-pick-balls"), firstQuickPick, true);
   $("#first-quick-pick-card").hidden = false;
 }
@@ -226,6 +264,19 @@ function updateLine() {
   renderPredictions();
 }
 
+function presentSelection(numbers, mode) {
+  generatedNumbers = null;
+  updateLine();
+  $("#line-caption").textContent = "Drawing your five numbers…";
+  $("#line-seq").textContent = "DRAWING";
+  revealOrbitNumbers(numbers, mode, () => {
+    generatedNumbers = numbers.slice();
+    generatedCount += 1;
+    renderFirstQuickPick();
+    updateLine();
+  });
+}
+
 function generateSelection() {
   const mode = selectedMode;
   let numbers;
@@ -241,17 +292,7 @@ function generateSelection() {
     positionModel = null;
     numbers = pickLine(mode);
   }
-  if (mode === "uniform") rememberFirstQuickPick(numbers);
-  generatedNumbers = null;
-  updateLine();
-  $("#line-caption").textContent = "Drawing your five numbers…";
-  $("#line-seq").textContent = "DRAWING";
-  revealOrbitNumbers(numbers, mode, () => {
-    generatedNumbers = numbers;
-    generatedCount += 1;
-    renderFirstQuickPick();
-    updateLine();
-  });
+  presentSelection(numbers, mode);
 }
 
 async function copyNumbers(button, lines) {
@@ -591,15 +632,22 @@ async function syncResults() {
         !incoming.coverage || incoming.coverage.drawCount !== incoming.draws.length ||
         incoming.coverage.lastDraw !== incoming.draws.at(-1)?.draw) throw new Error("The results service returned an incomplete archive.");
     const previousDraw = archive?.coverage?.lastDraw;
+    const drawAdvanced = previousDraw !== undefined && incoming.coverage.lastDraw > previousDraw;
     const archiveChanged = !archive || incoming.coverage.lastDraw !== previousDraw || incoming.retrievedAt !== archive.retrievedAt;
     archive = incoming;
     if (archiveChanged) {
-      if (previousDraw !== undefined && incoming.coverage.lastDraw > previousDraw && selectedMode === "predict") {
+      let nextDrawPick = null;
+      if (drawAdvanced) nextDrawPick = setFirstQuickPickForDraw(incoming.coverage.lastDraw);
+      if (drawAdvanced && selectedMode === "predict") {
         generatedNumbers = null;
         predictedLines = [];
         positionModel = null;
       }
       renderArchiveData();
+      if (drawAdvanced && selectedMode === "uniform") {
+        generatedCount = 0;
+        presentSelection(nextDrawPick, "uniform");
+      }
     }
     renderResultsStatus(snapshot);
     scheduleResultsPoll(Boolean(snapshot.refreshing));
@@ -642,9 +690,11 @@ async function start() {
   try {
     const snapshot = await loadInitialSnapshot();
     archive = snapshot.archive;
+    loadQuickPicks();
+    const openingPick = setFirstQuickPickForDraw(archive.coverage.lastDraw);
     attachEvents();
     renderArchiveData();
-    if (selectedMode === "uniform" && !firstQuickPick) generateSelection();
+    if (selectedMode === "uniform") presentSelection(openingPick, "uniform");
     renderResultsStatus(snapshot);
     watchForArchiveUpdates();
   } catch (error) {

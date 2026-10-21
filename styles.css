@@ -79,7 +79,7 @@ h1 em { color: #39776c; font-weight: 500; }
 .orbit { position: absolute; top: 18px; left: 71px; width: 104px; height: 104px; border: 1px solid #799387; border-radius: 50%; transform: rotate(-28deg) scaleX(1.45); }
 .orbit-two { transform: rotate(50deg) scaleX(1.43); border-color: #b7a984; }
 .orbit-ball { position: absolute; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #fffdf7; border-radius: 50%; box-shadow: 0 4px 10px #2137352c; color: var(--navy); background: var(--teal); font: bold 12px var(--body); }
-.orbit-ball-a { top: 17px; left: 123px; }.orbit-ball-b { top: 55px; left: 47px; background: var(--coral); color: #fffdf7; }.orbit-ball-c { top: 64px; left: 162px; background: var(--yellow); }.orbit-ball-d { top: 80px; left: 78px; background: #fffdf7; }
+.orbit-ball-a { top: 17px; left: 123px; }.orbit-ball-b { top: 55px; left: 47px; background: var(--coral); color: #fffdf7; }.orbit-ball-c { top: 64px; left: 162px; background: var(--yellow); }.orbit-ball-d { top: 80px; left: 78px; background: #fffdf7; }.orbit-ball-e { top: 101px; left: 18px; background: var(--yellow); }
 .orbit-star { position: absolute; top: 52px; left: 116px; color: var(--navy); font-size: 23px; }
 .art-caption { position: absolute; right: 50px; bottom: 16px; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; color: #668078; font-size: 9px; letter-spacing: .1em; }
 .art-caption b { color: var(--navy); font-size: 10px; }
@@ -171,6 +171,13 @@ h2 { margin: 0; font: 500 34px/1 var(--display); letter-spacing: -.035em; }
 .latest-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 13px; padding-top: 10px; border-top: 1px solid #88cbb6; color: #588377; font-size: 9px; }
 .latest-footer a { text-decoration: none; }
 .latest-footer a:hover, .text-link:hover { color: var(--coral); }
+.first-pick-card { padding: 13px 15px 11px; border: 1px solid #c9dfd3; border-radius: 5px; background: #e8f1e8; }
+.first-pick-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #56786e; }
+.first-pick-heading .tiny-label { font-size: 9px; }
+.first-pick-tag { color: #80948b; font-size: 8px; letter-spacing: .08em; white-space: nowrap; }
+.first-pick-balls { gap: 5px; margin-top: 10px; }
+.first-pick-balls .mini-ball { border-color: #c9dfd3; background: #fffdf7; }
+.first-pick-note { margin: 9px 0 0; color: #70827a; font-size: 9px; }
 .schedule-card { padding: 15px; border: 1px solid var(--line); border-radius: 5px; background: #f8f5ed; }
 .schedule-top { display: flex; align-items: center; justify-content: space-between; color: #6c8179; }
 .schedule-top .tiny-label { font-size: 9px; }
@@ -293,7 +300,7 @@ h3 { margin: 0; font: 500 21px/1 var(--display); letter-spacing: -.025em; }
   .page-heading { padding: 27px 0 18px; }
   .heading-art { flex-basis: 175px; height: 130px; }
   .orbit { top: 7px; left: 53px; }
-  .orbit-ball-a { left: 106px; }.orbit-ball-b { left: 29px; }.orbit-ball-c { top: 50px; left: 139px; }.orbit-ball-d { top: 62px; left: 62px; }.orbit-star { top: 42px; left: 98px; }
+  .orbit-ball-a { left: 106px; }.orbit-ball-b { left: 29px; }.orbit-ball-c { top: 50px; left: 139px; }.orbit-ball-d { top: 62px; left: 62px; }.orbit-ball-e { top: 91px; left: 7px; }.orbit-star { top: 42px; left: 98px; }
   .art-caption { right: 40px; bottom: 14px; }
   .art-caption span { display: none; }
   .pick-layout { grid-template-columns: minmax(0,1.4fr) minmax(200px,.8fr); }
@@ -313,7 +320,7 @@ h3 { margin: 0; font: 500 21px/1 var(--display); letter-spacing: -.025em; }
   .heading-art { flex: 0 0 105px; height: 107px; margin-top: 13px; transform: scale(.82); transform-origin: top right; }
   .art-caption { display: none; }
   .orbit { left: 24px; }
-  .orbit-ball-a { left: 77px; }.orbit-ball-b { left: 0; }.orbit-ball-c { left: 111px; }.orbit-ball-d { left: 33px; }.orbit-star { left: 69px; }
+  .orbit-ball-a { top: 4px; left: 48px; }.orbit-ball-b { top: 33px; left: 0; }.orbit-ball-c { top: 35px; left: 69px; }.orbit-ball-d { top: 67px; left: 20px; }.orbit-ball-e { top: 75px; left: 51px; }.orbit-star { top: 43px; left: 41px; }
   .rule-bar { align-items: flex-start; flex-direction: column; gap: 11px; }
   .era-switch { width: 100%; }
   .era-button { justify-content: center; flex: 1; }

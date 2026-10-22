@@ -1,13 +1,13 @@
 {
   "source": "Official Malta National Lottery Super5 results history",
   "sourceUrl": "https://lottery.mt/super5/results/history",
-  "retrievedAt": "2026-10-20",
+  "retrievedAt": "2026-10-22",
   "coverage": {
     "firstDraw": 1,
     "firstDate": "2022-07-13",
-    "lastDraw": 393,
-    "lastDate": "2026-10-16",
-    "drawCount": 393
+    "lastDraw": 394,
+    "lastDate": "2026-10-21",
+    "drawCount": 394
   },
   "formats": [
     {
@@ -20,8 +20,8 @@
       "name": "5/49",
       "fromDraw": 259,
       "fromDate": "2025-07-04",
-      "throughDraw": 393,
-      "throughDate": "2026-10-16"
+      "throughDraw": 394,
+      "throughDate": "2026-10-21"
     }
   ],
   "draws": [
@@ -4347,6 +4347,22 @@
         16,
         26
       ]
+    },
+    {
+      "draw": 394,
+      "date": "2026-10-21",
+      "numbers": [
+        3,
+        15,
+        21,
+        34,
+        39
+      ]
     }
-  ]
+  ],
+  "lastUpdateSource": {
+    "name": "Stats247 (third-party fallback)",
+    "url": "https://stats247.com/lotto/malta-super-5",
+    "checkedAt": "2026-10-22T12:41:44.770Z"
+  }
 }

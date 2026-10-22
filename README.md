@@ -24,7 +24,7 @@ The command first reads the official [Super5 results history](https://lottery.mt
 
 The updater validates the existing archive and every source draw before writing. If both sources are unavailable, or the fallback is stale, incomplete, changed, or invalid, it reports the error and leaves the archive untouched. Writes use a temporary file in the same directory followed by an atomic rename. Each completed check time and status is stored in `data/results-check.json`; run messages are appended to `data/results-update.log`.
 
-The updater reuses the visible draw-card parser for the official history page; no official machine-readable feed is documented or linked by the operator. It does not call guessed or undocumented endpoints. Stats247 warns that its results may be delayed or incorrect, so any fallback check is labeled in the app and its source is recorded when it adds draws. If either source is stale, incomplete, changed, or invalid, the archive is left untouched.
+The updater reuses the visible draw-card parser for the official history page; no official machine-readable feed is documented or linked by the operator. It does not call guessed or undocumented endpoints. Stats247 warns that its results may be delayed or incorrect, so any fallback check is recorded in the check state and update log, along with its source when it adds draws. If either source is stale, incomplete, changed, or invalid, the archive is left untouched.
 
 ## Optional Windows schedule
 
@@ -67,7 +67,7 @@ Render services use an ephemeral filesystem by default. The app can refresh its 
 
 Quick pick samples five different numbers uniformly. Recent favourites, Long view, and Overdue list summarize archived frequency or draw gaps.
 
-**Past-draw sample picks** offer 1–10 lines (five by default), ranked from patterns in the saved draws. Each line contains five distinct numbers for the selected rules era. These lines are for exploration only; every valid line has the same chance of being drawn.
+**Draw Forecast** offers 1–10 lines (five by default), ranked from patterns in the saved draws. Each line contains five distinct numbers for the selected rules era. These lines are for exploration only; every valid line has the same chance of being drawn.
 
 Choose how much **Variety** to include:
 

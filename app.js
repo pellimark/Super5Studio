@@ -15,14 +15,14 @@ const MODE_LABELS = {
   recent: "RECENT FAVOURITES",
   long: "LONG VIEW",
   overdue: "OVERDUE LIST",
-  predict: "PAST-DRAW SAMPLES"
+  predict: "DRAW FORECAST"
 };
 const MODE_CAPTIONS = {
   uniform: "A random line. Every valid line is equally likely.",
   recent: "Most common in the last 30 draws.",
   long: "Most common in this format.",
   overdue: "Longest gap in this format.",
-  predict: "Sample picks ranked from past draws. Every valid line has the same odds."
+  predict: "Forecast lines ranked from past draws. Every valid line has the same odds."
 };
 let archive = null;
 let activeView = "pick";
@@ -175,6 +175,7 @@ function setFirstQuickPickForDraw(drawNumber) {
   firstQuickPickDraw = drawNumber;
   firstQuickPick = record.numbers.slice();
   renderFirstQuickPick();
+  updateOrbitCaption();
   return firstQuickPick.slice();
 }
 
@@ -191,70 +192,57 @@ function cancelOrbitReveal() {
   orbitRevealVersion += 1;
 }
 
-function showSpinPreview(numbers, mode, primary = false) {
-  const preview = $("#spin-preview");
-  $("#extra-lines-section").hidden = false;
-  const predictor = mode === "predict";
-  const lineNumber = predictor ? "SAMPLE 01" : "LINE " + String(primary ? 1 : extraLines.length + 2).padStart(2, "0") + " / " + MAX_PICK_LINES;
-  const modeName = mode === "uniform" ? "QUICK PICK" : MODE_LABELS[mode];
-  $("#spin-preview-index").textContent = lineNumber;
-  $("#spin-preview-mode").textContent = modeName + " FOR DRAW " + firstQuickPickDraw;
-  const host = $("#spin-preview-balls");
-  host.replaceChildren();
-  numbers.forEach((number, index) => {
-    const ball = document.createElement("span");
-    ball.className = "mini-ball is-rolling";
-    ball.style.setProperty("--i", String(index));
-    ball.textContent = "•";
-    host.append(ball);
-  });
-  preview.hidden = false;
-}
-
 function resetOrbitNumbers() {
   cancelOrbitReveal();
   setSelectionRevealing(false);
-  $("#spin-preview").hidden = true;
-  $("#heading-art").classList.remove("is-spinning");
+  const art = $("#heading-art");
+  art.classList.remove("is-spinning");
+  art.classList.add("is-orbiting");
   $("#generate-line").classList.remove("is-spinning");
   $("#spin-status").textContent = "";
-  $$(".orbit-ball").forEach((ball) => {
-    ball.textContent = "";
+  $$(".orbit-ball").forEach((ball, index) => {
+    const number = firstQuickPick?.[index];
+    ball.textContent = number == null ? "" : String(number);
     ball.classList.remove("is-revealed");
-    ball.classList.add("is-waiting");
+    ball.classList.remove("is-waiting");
+    ball.classList.toggle("is-persistent", number != null);
   });
-  $("#heading-art").setAttribute("aria-label", "Your current line is waiting to be drawn");
+  art.setAttribute("aria-label", firstQuickPick
+    ? "Your next draw pick is " + firstQuickPick.join(", ")
+    : "Your current line is waiting to be drawn");
   updateOrbitCaption();
 }
 
 function setOrbitNumbers(numbers, mode = "uniform") {
   if (!numbers) return;
+  const orbitNumbers = firstQuickPick || numbers;
   cancelOrbitReveal();
   setSelectionRevealing(false);
   const art = $("#heading-art");
   art.classList.remove("is-spinning");
-  $("#spin-preview").hidden = true;
+  art.classList.add("is-orbiting");
   $$(".orbit-ball").forEach((ball, index) => {
-    ball.textContent = String(numbers[index]);
+    ball.textContent = String(orbitNumbers[index]);
     ball.classList.remove("is-waiting", "is-revealed");
+    ball.classList.add("is-persistent");
   });
-  art.setAttribute("aria-label", "Your " + (mode === "uniform" ? "quick pick" : "line") + " is " + numbers.join(", "));
+  art.setAttribute("aria-label", "Your next draw pick is " + orbitNumbers.join(", "));
   updateOrbitCaption();
 }
 
-function renderDrawLuckyLine() {
+function renderDrawLuckyLine(animate = false) {
   if (!firstQuickPick) return;
   $("#primary-line-result").classList.add("draw-lucky-result");
   $("#line-title").textContent = "YOUR DRAW " + firstQuickPickDraw + " LUCKY NUMBERS";
   $("#line-seq").textContent = "SAVED PICK";
   $("#line-caption").textContent = "Your first pick for this draw. It stays here while you explore.";
-  setBallRow($("#generated-line"), firstQuickPick, false);
+  setBallRow($("#generated-line"), firstQuickPick, false, animate);
   $("#copy-line").disabled = false;
 }
 
-function renderPrimaryLine() {
+function renderPrimaryLine(animate = false) {
   if (selectedMode === "uniform") {
-    renderDrawLuckyLine();
+    renderDrawLuckyLine(animate);
     return;
   }
 
@@ -264,7 +252,7 @@ function renderPrimaryLine() {
   $("#line-title").textContent = MODE_LABELS[selectedMode];
   $("#line-seq").textContent = predicting ? "SAMPLE 01" : "LINE 01";
   $("#line-caption").textContent = MODE_CAPTIONS[selectedMode];
-  setBallRow($("#generated-line"), numbers || [null, null, null, null, null], false);
+  setBallRow($("#generated-line"), numbers || [null, null, null, null, null], false, animate && Boolean(numbers));
   $("#copy-line").disabled = !numbers;
 }
 
@@ -278,60 +266,46 @@ function setSelectionRevealing(revealing) {
 }
 
 function updateOrbitCaption() {
-  if (selectionIsRevealing) return;
-  if (selectedMode === "predict" && generatedNumbers) {
-    $("#heading-line-title").textContent = "PAST-DRAW SAMPLES";
-    $("#heading-line-seq").textContent = "SAMPLE 01";
-    return;
-  }
-  const latest = extraLines.at(-1);
-  if (latest) {
-    $("#heading-line-title").textContent = "YOUR LINE";
-    $("#heading-line-seq").textContent = "LINE " + String(extraLines.length + 1).padStart(2, "0") + " / " + MAX_PICK_LINES;
-    return;
-  }
-  $("#heading-line-title").textContent = selectedMode === "uniform"
-    ? "DRAW " + firstQuickPickDraw + " PICK"
-    : MODE_LABELS[selectedMode];
-  $("#heading-line-seq").textContent = selectedMode === "predict"
-    ? "SAMPLE 01"
-    : selectedMode === "uniform" ? "FIRST LINE" : "LINE 01";
+  $("#heading-line-title").textContent = "YOUR LUCKY DRAW";
+  $("#heading-line-seq").textContent = firstQuickPickDraw ? "DRAW #" + firstQuickPickDraw : "NEXT DRAW";
 }
 
-function revealOrbitNumbers(numbers, mode, onComplete) {
+function revealOrbitNumbers(numbers, mode, onComplete, animateOrbit = false) {
+  const orbitNumbers = firstQuickPick || numbers;
+  if (!animateOrbit) {
+    setSelectionRevealing(false);
+    onComplete();
+    $("#generate-line").classList.remove("is-spinning");
+    return;
+  }
   cancelOrbitReveal();
   const revealVersion = orbitRevealVersion;
   const art = $("#heading-art");
   art.classList.add("is-spinning");
   const balls = $$(".orbit-ball");
-  const previewBalls = $$("#spin-preview-balls .mini-ball");
-  balls.forEach((ball) => {
-    ball.textContent = "";
+  balls.forEach((ball, index) => {
+    ball.textContent = String(orbitNumbers[index]);
     ball.classList.remove("is-revealed");
-    ball.classList.add("is-waiting");
+    ball.classList.remove("is-waiting");
+    ball.classList.add("is-persistent");
   });
 
   const finish = () => {
     if (revealVersion !== orbitRevealVersion) return;
     orbitRevealTimer = null;
     art.classList.remove("is-spinning");
-    const pickName = mode === "uniform" ? "quick pick" : "line";
-    art.setAttribute("aria-label", "Your " + pickName + " is " + numbers.join(", "));
+    art.classList.add("is-orbiting");
+    art.setAttribute("aria-label", "Your next draw pick is " + orbitNumbers.join(", "));
     $("#spin-status").textContent = "Numbers revealed: " + numbers.join(", ") + ".";
     onComplete();
   };
   const reveal = (index) => {
     if (revealVersion !== orbitRevealVersion) return;
     const ball = balls[index];
-    ball.textContent = String(numbers[index]);
+    ball.textContent = String(orbitNumbers[index]);
     ball.classList.remove("is-waiting");
+    ball.classList.add("is-persistent");
     ball.classList.add("is-revealed");
-    const previewBall = previewBalls[index];
-    if (previewBall) {
-      previewBall.textContent = String(numbers[index]);
-      previewBall.classList.remove("is-rolling");
-      previewBall.classList.add("is-revealed");
-    }
     if (index === balls.length - 1) {
       finish();
       return;
@@ -340,15 +314,11 @@ function revealOrbitNumbers(numbers, mode, onComplete) {
   };
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    numbers.forEach((number, index) => {
+    orbitNumbers.forEach((number, index) => {
       balls[index].textContent = String(number);
       balls[index].classList.remove("is-waiting");
+      balls[index].classList.add("is-persistent");
       balls[index].classList.add("is-revealed");
-      if (previewBalls[index]) {
-        previewBalls[index].textContent = String(number);
-        previewBalls[index].classList.remove("is-rolling");
-        previewBalls[index].classList.add("is-revealed");
-      }
     });
     finish();
     return;
@@ -356,9 +326,9 @@ function revealOrbitNumbers(numbers, mode, onComplete) {
   orbitRevealTimer = window.setTimeout(() => reveal(0), 100);
 }
 
-function updateLine(animateLatest = false) {
+function updateLine(animateLatest = false, animatePrimary = false) {
   const predicting = selectedMode === "predict";
-  renderPrimaryLine();
+  renderPrimaryLine(animatePrimary);
   renderExtraLines(animateLatest);
   $("#copy-line").textContent = "COPY";
   $("#copy-all-outcomes").textContent = "COPY ALL";
@@ -366,27 +336,24 @@ function updateLine(animateLatest = false) {
   $("#prediction-controls").hidden = !predicting;
   $("#position-labels").hidden = !predicting;
   $("#prediction-results").hidden = !predicting || !generatedNumbers || !predictedLines.length;
-  $("#generate-label").textContent = predicting ? "Build sample picks" : "Spin a line";
+  $("#generate-line").hidden = selectedMode !== "uniform";
+  $("#generate-label").textContent = predicting ? "Build Draw Forecast" : "Spin a line";
   if (!predicting && extraLines.length >= MAX_PICK_LINES - 1) $("#generate-label").textContent = "Line limit reached";
   $("#generate-line").disabled = selectionIsRevealing || (!predicting && extraLines.length >= MAX_PICK_LINES - 1);
   updateOrbitCaption();
   renderPredictions();
 }
 
-function presentSelection(numbers, mode, onComplete, primary = false) {
-  showSpinPreview(numbers, mode, primary);
+function presentSelection(numbers, mode, onComplete, animateOrbit = false) {
   setSelectionRevealing(true);
   $("#generate-line").classList.add("is-spinning");
-  $("#generate-label").textContent = mode === "predict" ? "Building sample picks…" : "Spinning…";
-  $("#spin-status").textContent = mode === "predict" ? "Building a past-draw sample pick." : "Spinning a new line.";
-  $("#heading-line-title").textContent = mode === "uniform" ? "QUICK PICK" : MODE_LABELS[mode];
-  $("#heading-line-seq").textContent = "SPINNING";
+  $("#generate-label").textContent = mode === "predict" ? "Building Draw Forecast…" : "Spinning…";
+  $("#spin-status").textContent = mode === "predict" ? "Building a Draw Forecast line." : "Spinning a new line.";
   revealOrbitNumbers(numbers, mode, () => {
     setSelectionRevealing(false);
     onComplete();
     $("#generate-line").classList.remove("is-spinning");
-    $("#spin-preview").hidden = true;
-  });
+  }, animateOrbit);
 }
 
 function generateSelection() {
@@ -403,8 +370,8 @@ function generateSelection() {
     generatedNumbers = null;
     presentSelection(numbers, mode, () => {
       generatedNumbers = numbers.slice();
-      updateLine();
-      $("#spin-status").textContent = "Past-draw sample pick 1 of " + predictedLines.length + ": " + numbers.join(", ") + ".";
+      updateLine(false, true);
+      $("#spin-status").textContent = "Draw Forecast line 1 of " + predictedLines.length + ": " + numbers.join(", ") + ".";
     });
     return;
   }
@@ -485,7 +452,7 @@ function renderPredictions() {
   $("#copy-fallback").hidden = true;
   if (selectedMode !== "predict" || !positionModel || !generatedNumbers) return;
 
-  $("#prediction-summary").textContent = predictedLines.length + (predictedLines.length === 1 ? " sample line" : " sample lines") +
+  $("#prediction-summary").textContent = predictedLines.length + (predictedLines.length === 1 ? " forecast line" : " forecast lines") +
     " · " + DIVERSITY_SETTINGS[$("#outcome-diversity").value].label +
     " · " + eraDraws().length + " draws in the " + currentRules().format + " era";
   $("#prediction-limit-note").hidden = predictedLines.length >= Number($("#outcome-count").value);
@@ -503,7 +470,7 @@ function renderPredictions() {
     copy.className = "copy-button";
     copy.type = "button";
     copy.textContent = "↗ COPY";
-    copy.setAttribute("aria-label", "Copy sample pick " + (index + 2));
+    copy.setAttribute("aria-label", "Copy forecast line " + (index + 2));
     copy.addEventListener("click", () => { void copyNumbers(copy, [numbers]); });
     row.append(label, balls, copy);
     host.append(row);
@@ -528,18 +495,12 @@ function renderResultsStatus(snapshot) {
   $("#scheduled-draw-number").textContent = String(scheduled.draw);
   $("#scheduled-draw-date").textContent = prettyDate(scheduled.date);
   $("#scheduled-draw-date").dateTime = scheduled.date;
+  $("#orbit-draw-number").textContent = "#" + scheduled.draw;
 
   const lastCheck = snapshot.lastCheck;
   $("#source-check-time").textContent = lastCheck?.checkedAt
     ? prettyMaltaTimestamp(lastCheck.checkedAt)
     : "Not checked yet";
-  const status = $("#refresh-state");
-  status.classList.toggle("is-error", lastCheck?.status === "error" && !snapshot.refreshing);
-  status.textContent = snapshot.refreshing
-    ? "Checking results sources…"
-    : lastCheck?.status === "error"
-      ? "Last check could not verify results: " + lastCheck.message
-      : lastCheck?.message || "The saved archive is ready.";
 }
 
 function renderRecent() {
@@ -711,7 +672,7 @@ function showSelectedModePrimary() {
   updateLine();
 
   if (selectedMode === "uniform") {
-    presentSelection(firstQuickPick, "uniform", updateLine, true);
+    presentSelection(firstQuickPick, "uniform", () => updateLine(false, true));
     return;
   }
   if (selectedMode === "predict") {
@@ -722,9 +683,9 @@ function showSelectedModePrimary() {
   const numbers = pickLine(selectedMode);
   presentSelection(numbers, selectedMode, () => {
     generatedNumbers = numbers.slice();
-    updateLine();
+    updateLine(false, true);
     $("#spin-status").textContent = MODE_LABELS[selectedMode] + " line 1 for draw " + firstQuickPickDraw + ": " + numbers.join(", ") + ".";
-  }, true);
+  });
 }
 
 function showView(view) {
@@ -892,7 +853,7 @@ async function start() {
     const openingPick = setFirstQuickPickForDraw(targetDrawNumber());
     attachEvents();
     renderArchiveData();
-    presentSelection(openingPick, "uniform", updateLine, true);
+    presentSelection(openingPick, "uniform", () => updateLine(false, true), true);
     renderResultsStatus(snapshot);
     watchForArchiveUpdates();
   } catch (error) {

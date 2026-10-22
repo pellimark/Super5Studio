@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f3efe5">
-    <meta name="description" content="Browse Malta Super5 results and history, compare number frequencies, and explore sample picks from past draws. No pick predicts results or improves the odds.">
+    <meta name="description" content="Browse Malta Super5 results and history, compare number frequencies, and explore Draw Forecast picks based on past draws. No pick predicts results or improves the odds.">
     <meta name="google-site-verification" content="olTG6a2HHrlBFdlPZ0w8g9NN2Njns6Y2RGS5scGMK-w">
     <title>Malta Super5 Results &amp; History | Frequencies &amp; Picks</title>
     <link rel="canonical" href="https://super5malta.onrender.com/">
@@ -55,7 +55,7 @@
           <div class="heading-copy">
             <p class="eyebrow"><span class="eyebrow-line"></span> A LITTLE HISTORY, A LITTLE LUCK</p>
             <h1>Malta Super5<br><em>Results &amp; History</em></h1>
-            <p class="heading-intro">Browse Malta Super5 draw results and history, explore number frequencies, and try sample picks based on past draws. Past results do not predict future draws or improve the odds.</p>
+            <p class="heading-intro">Browse Malta Super5 draw results and history, explore number frequencies, and try Draw Forecast picks based on past draws. Past results do not predict future draws or improve the odds.</p>
           </div>
           <div class="heading-art" id="heading-art" role="img" aria-label="Your current line is waiting to be drawn">
             <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -63,7 +63,8 @@
             <span class="orbit-ball orbit-ball-c is-waiting"></span><span class="orbit-ball orbit-ball-d is-waiting"></span>
             <span class="orbit-ball orbit-ball-e is-waiting"></span>
             <span class="orbit-star">✳</span>
-            <div class="art-caption"><b id="heading-line-title">YOUR QUICK PICK</b><span id="heading-line-seq">BALLS IN MOTION</span></div>
+            <div class="orbit-kicker"><span class="orbit-live-dot"></span><span>NEXT DRAW</span><b id="orbit-draw-number">—</b></div>
+            <div class="art-caption"><b id="heading-line-title">YOUR LUCKY DRAW</b><span id="heading-line-seq">NEXT DRAW</span></div>
           </div>
         </header>
 
@@ -98,8 +99,17 @@
                   <span class="mode-icon">◌</span><span class="mode-name">Overdue list</span><span class="mode-detail">Longest gap since last appearance.</span>
                 </button>
                 <button class="mode-option" data-mode="predict" aria-pressed="false">
-                  <span class="mode-icon">◈</span><span class="mode-name">Past-draw samples</span><span class="mode-detail">Sample picks ranked from past draws.</span>
+                  <span class="mode-icon">◈</span><span class="mode-name">Draw Forecast</span><span class="mode-detail">Forecast lines ranked from past draws.</span>
                 </button>
+              </div>
+
+              <div class="line-result draw-lucky-result" id="primary-line-result">
+                <div class="line-label"><span id="line-title">YOUR QUICK PICK</span><span class="line-seq" id="line-seq">LINE 01</span></div>
+                <div class="number-line" id="generated-line">
+                  <span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span>
+                </div>
+                <div class="position-labels" id="position-labels" hidden><span>LOWEST</span><span>2ND</span><span>3RD</span><span>4TH</span><span>HIGHEST</span></div>
+                <div class="line-foot"><span id="line-caption">A fresh, uniformly random line.</span><button class="copy-button" id="copy-line" type="button" disabled>↗ COPY</button></div>
               </div>
 
               <div class="prediction-controls" id="prediction-controls" hidden>
@@ -119,29 +129,16 @@
                 <p class="prediction-control-note">The archive records numbers sorted from smallest to largest, not the order the balls were drawn.</p>
               </div>
 
-              <div class="line-result draw-lucky-result" id="primary-line-result">
-                <div class="line-label"><span id="line-title">YOUR QUICK PICK</span><span class="line-seq" id="line-seq">LINE 01</span></div>
-                <div class="number-line" id="generated-line">
-                  <span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span><span class="number-ball is-empty">–</span>
-                </div>
-                <div class="position-labels" id="position-labels" hidden><span>LOWEST</span><span>2ND</span><span>3RD</span><span>4TH</span><span>HIGHEST</span></div>
-                <div class="line-foot"><span id="line-caption">A fresh, uniformly random line.</span><button class="copy-button" id="copy-line" type="button" disabled>↗ COPY</button></div>
-              </div>
-
               <section class="extra-lines-section" id="extra-lines-section" aria-label="Additional generated lines" hidden>
                 <div class="extra-lines-top"><span class="tiny-label" id="extra-lines-count">01 / 10 LINES</span><button class="clear-lines-button" id="clear-extra-lines" type="button" hidden>Clear</button></div>
                 <ol class="extra-lines-list" id="extra-lines" start="2" aria-live="polite"></ol>
-                <div class="spin-preview" id="spin-preview" aria-hidden="true" hidden>
-                  <div class="extra-line-heading"><span class="extra-line-index" id="spin-preview-index">ROLLING</span><span id="spin-preview-mode">QUICK PICK FOR DRAW 394</span></div>
-                  <div class="mini-balls extra-line-balls" id="spin-preview-balls"></div>
-                </div>
               </section>
 
-              <section class="prediction-results" id="prediction-results" aria-label="Sample number picks based on past draws" hidden>
+              <section class="prediction-results" id="prediction-results" aria-label="Draw Forecast lines based on past draws" hidden>
                 <div class="prediction-summary-bar"><p class="prediction-summary" id="prediction-summary" role="status"></p><button class="copy-button" id="copy-all-outcomes" type="button">↗ COPY ALL</button></div>
                 <p class="prediction-limit-note" id="prediction-limit-note" hidden>Fewer lines are available with this Variety setting.</p>
                 <div id="prediction-alternatives">
-                  <p class="tiny-label">MORE SAMPLE PICKS</p>
+                  <p class="tiny-label">MORE DRAW FORECAST LINES</p>
                   <ol class="prediction-outcomes" id="prediction-outcomes" start="2"></ol>
                 </div>
               </section>
@@ -176,7 +173,6 @@
                 <p class="schedule-caveat">Regular Wednesday and Friday schedule, Malta time. Draw dates can change or have exceptions.</p>
                 <div class="source-check" aria-live="polite">
                   <div class="source-check-heading"><span>LAST SOURCE CHECK</span><time id="source-check-time">Checking now…</time></div>
-                  <p id="refresh-state">Checking results sources…</p>
                 </div>
                 <a class="play-page-link" href="https://lottery.mt/super5" target="_blank" rel="noreferrer">OFFICIAL SUPER5 PLAY PAGE <span aria-hidden="true">↗</span></a>
                 <p class="play-page-note">Open the lottery site to choose numbers. This link does not transfer your picks.</p>
